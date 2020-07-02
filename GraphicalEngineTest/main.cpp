@@ -56,6 +56,7 @@ struct Vertex
     float TextureY;
 };
 
+
 // Takes a DWORD error code and returns its string message 
 std::wstring GetErrorStringW(DWORD error)
 {
@@ -230,6 +231,7 @@ int WindowLoop(HWND hwnd,
 };
 
 
+
 void CreateD3D2DTexture(D3D11_TEXTURE2D_DESC& d3d2DTextureDescriptor,
                         int windowWidth,
                         int windowHeight,
@@ -261,9 +263,10 @@ void CreateD3D2DTexture(D3D11_TEXTURE2D_DESC& d3d2DTextureDescriptor,
 };
 
 
+
 void CreateShaderResourceView(const D3D11_TEXTURE2D_DESC& d3d2DTextureDescriptor,
-                              Microsoft::WRL::ComPtr<ID3D11Device> d3dDevice,
-                              Microsoft::WRL::ComPtr<ID3D11Texture2D> d3dTexture,
+                              Microsoft::WRL::ComPtr<ID3D11Device>              d3dDevice,
+                              Microsoft::WRL::ComPtr<ID3D11Texture2D>           d3dTexture,
                               Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>& d3dShaderResourceView)
 {
     D3D11_SHADER_RESOURCE_VIEW_DESC d3dShaderResourceViewDescriptor = { };
@@ -293,7 +296,10 @@ void CreatePixelShader(Microsoft::WRL::ComPtr<ID3D11Device> d3dDevice, Microsoft
 };
 
 
-void CreateVertexShader(Microsoft::WRL::ComPtr<ID3D11Device> d3dDevice, Microsoft::WRL::ComPtr<ID3D11VertexShader>& d3dVertexShader)
+
+void CreateVertexShader(Microsoft::WRL::ComPtr<ID3D11Device>        d3dDevice,
+                        Microsoft::WRL::ComPtr<ID3DBlob>& vertexShaderBlob,
+                        Microsoft::WRL::ComPtr<ID3D11VertexShader>& d3dVertexShader)
 {
     const char* vertexShaderTargetProfile = "vs_5_0";
     const char* vertexShaderEntryPoint = "main";
@@ -301,17 +307,17 @@ void CreateVertexShader(Microsoft::WRL::ComPtr<ID3D11Device> d3dDevice, Microsof
 
     int pixelShaderFlags = D3DCOMPILE_DEBUG;
 
-    Microsoft::WRL::ComPtr<ID3DBlob> shaderBlob = nullptr;
-    Microsoft::WRL::ComPtr<ID3DBlob> errorBlob = nullptr;
+    Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
 
-    COM_CALL(D3DCompileFromFile(vertexShaderFileName, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, vertexShaderEntryPoint, vertexShaderTargetProfile, pixelShaderFlags, 0, shaderBlob.GetAddressOf(), errorBlob.GetAddressOf()));
+    COM_CALL(D3DCompileFromFile(vertexShaderFileName, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, vertexShaderEntryPoint, vertexShaderTargetProfile, pixelShaderFlags, 0, vertexShaderBlob.GetAddressOf(), errorBlob.GetAddressOf()));
 
-    COM_CALL(d3dDevice->CreateVertexShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), nullptr, d3dVertexShader.GetAddressOf()));
+    COM_CALL(d3dDevice->CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, d3dVertexShader.GetAddressOf()));
 }
 
 
-void CreateBuffer(Microsoft::WRL::ComPtr<ID3D11Device> d3dDevice,
-                  Microsoft::WRL::ComPtr<ID3D11Buffer>& d3dBuffer)
+
+void CreateBuffer(Microsoft::WRL::ComPtr<ID3D11Device>  d3dDevice,
+                  Microsoft::WRL::ComPtr<ID3D11Buffer>& d3dVertexBuffer)
 {
     const Vertex vertices[] =
     {
@@ -323,23 +329,54 @@ void CreateBuffer(Microsoft::WRL::ComPtr<ID3D11Device> d3dDevice,
         { -1.0f, -1.0f, 0.5f, 0.0f, 1.0f },
     };
 
+    unsigned int numberOfVertices = ARRAYSIZE(vertices);
+
     D3D11_BUFFER_DESC d3dBufferDescriptor = { 0 };
     d3dBufferDescriptor.Usage = D3D11_USAGE::D3D11_USAGE_DEFAULT;
-    d3dBufferDescriptor.ByteWidth = sizeof(Vertex) * (ARRAYSIZE(vertices));
+    d3dBufferDescriptor.ByteWidth = sizeof(Vertex) * numberOfVertices;
     d3dBufferDescriptor.CPUAccessFlags = 0;
     d3dBufferDescriptor.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_VERTEX_BUFFER;
 
     D3D11_SUBRESOURCE_DATA d3dSubResourceData = { 0 };
     d3dSubResourceData.pSysMem = vertices;
 
-    COM_CALL(d3dDevice->CreateBuffer(&d3dBufferDescriptor, &d3dSubResourceData, d3dBuffer.GetAddressOf()));
+    COM_CALL(d3dDevice->CreateBuffer(&d3dBufferDescriptor, &d3dSubResourceData, d3dVertexBuffer.GetAddressOf()));
 };
 
 
-void CreateInputLayout(Microsoft::WRL::ComPtr<ID3D11InputLayout> d3dInputLayout)
+
+void CreateInputLayout(Microsoft::WRL::ComPtr<ID3D11Device>       d3dDevice,
+                       Microsoft::WRL::ComPtr<ID3DBlob>           vertexShaderBlob,
+                       Microsoft::WRL::ComPtr<ID3D11InputLayout>& d3dInputLayout)
 {
+    D3D11_INPUT_ELEMENT_DESC inputElementDescriptor[] =
+    {
+        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+    };
 
+    COM_CALL(d3dDevice->CreateInputLayout(inputElementDescriptor,
+             // Passing 2 because the Vertex shader expects 2 arguments
+             2,
+             vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), d3dInputLayout.GetAddressOf()));
 };
+
+void CreateSamplerState(Microsoft::WRL::ComPtr<ID3D11Device>        d3dDevice,
+                        Microsoft::WRL::ComPtr<ID3D11SamplerState>& d3dSamplerState)
+{
+    D3D11_SAMPLER_DESC smaplerDescriptor;
+    smaplerDescriptor.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+    smaplerDescriptor.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+    smaplerDescriptor.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+    smaplerDescriptor.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+    smaplerDescriptor.ComparisonFunc = D3D11_COMPARISON_NEVER;
+    smaplerDescriptor.MinLOD = 0;
+    smaplerDescriptor.MaxLOD = D3D11_FLOAT32_MAX;
+
+    COM_CALL(d3dDevice->CreateSamplerState(&smaplerDescriptor, d3dSamplerState.GetAddressOf()));
+};
+
+
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nShowCmd)
 {
@@ -375,10 +412,13 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
     Microsoft::WRL::ComPtr<ID3D11VertexShader> d3dVertexShader;
 
-    Microsoft::WRL::ComPtr<ID3D11Buffer> d3dBuffer;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> d3dVertexBuffer;
 
     Microsoft::WRL::ComPtr<ID3D11InputLayout> d3dInputLayout;
 
+    Microsoft::WRL::ComPtr<ID3DBlob> vertexShaderBlob;
+
+    Microsoft::WRL::ComPtr<ID3D11SamplerState> d3dSamplerState;
 
     Colour* pixelData = new Colour[static_cast<std::size_t>(windowWidth) * static_cast<std::size_t>(windowHeight)];
 
@@ -441,9 +481,13 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
     CreatePixelShader(d3dDevice, d3dPixelShader);
 
-    CreateVertexShader(d3dDevice, d3dVertexShader);
+    CreateVertexShader(d3dDevice, vertexShaderBlob, d3dVertexShader);
 
-    CreateBuffer(d3dDevice, d3dBuffer);
+    CreateBuffer(d3dDevice, d3dVertexBuffer);
+
+    CreateInputLayout(d3dDevice, vertexShaderBlob, d3dInputLayout);
+
+    CreateSamplerState(d3dDevice, d3dSamplerState);
 
     int exitCode = WindowLoop(hwnd, d3dDeviceContext, dxgiSwapChain, d3dDevice, d3dRendererTraget, d3d2DTexture);
 
