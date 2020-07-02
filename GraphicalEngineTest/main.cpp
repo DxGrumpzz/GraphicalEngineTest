@@ -145,12 +145,53 @@ HWND CreateMainWindow(HINSTANCE hInstance,
 
 
 
-void EndFrame(Microsoft::WRL::ComPtr<ID3D11DeviceContext> d3dDeviceContext,
-              Microsoft::WRL::ComPtr<IDXGISwapChain>      dxgiSwapChain,
-              Microsoft::WRL::ComPtr<ID3D11Texture2D>	  d3dTexture)
+void EndFrame(Microsoft::WRL::ComPtr<ID3D11DeviceContext>      d3dDeviceContext,
+              Microsoft::WRL::ComPtr<IDXGISwapChain>           dxgiSwapChain,
+              Microsoft::WRL::ComPtr<ID3D11Buffer>             d3dVertexBuffer,
+              Microsoft::WRL::ComPtr<ID3D11InputLayout>        d3dInputLayout,
+              Microsoft::WRL::ComPtr<ID3D11PixelShader>        d3dPixelShader,
+              Microsoft::WRL::ComPtr<ID3D11VertexShader>       d3dVertexShader,
+              Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> d3dShaderResourceView,
+              Microsoft::WRL::ComPtr<ID3D11SamplerState>       d3dSamplerState,
+              Colour* pixelData,
+              int                                              windowWidth,
+              int                                              windowHeight)
 {
+    D3D11_MAPPED_SUBRESOURCE mappedSysBufferTexture = { 0 };
 
-    dxgiSwapChain->Present(1, NULL);
+    COM_CALL(d3dDeviceContext->Map(d3dVertexBuffer.Get(), 0, D3D11_MAP::D3D11_MAP_WRITE_DISCARD, 0, &mappedSysBufferTexture));
+
+    Colour* pDst = reinterpret_cast<Colour*>(mappedSysBufferTexture.pData);
+
+    std::size_t destinationPitch = mappedSysBufferTexture.RowPitch / sizeof(Colour);
+    std::size_t srcPitch = windowWidth;
+    std::size_t rowBytes = srcPitch * sizeof(Colour);
+
+
+    for (size_t y = 0u; y < windowHeight; y++)
+    {
+        memcpy(&pDst[y * destinationPitch], &pixelData[y * srcPitch], rowBytes);
+    };
+
+
+    d3dDeviceContext->Unmap(d3dVertexBuffer.Get(), 0);
+
+
+    d3dDeviceContext->IASetInputLayout(d3dInputLayout.Get());
+    d3dDeviceContext->VSSetShader(d3dVertexShader.Get(), nullptr, 0u);
+    //d3dDeviceContext->PSSetShader(d3dPixelShader.Get(), nullptr, 0u);
+    d3dDeviceContext->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    const UINT stride = sizeof(Vertex);
+    const UINT offset = 0u;
+
+    d3dDeviceContext->IASetVertexBuffers(0u, 1u, d3dVertexBuffer.GetAddressOf(), &stride, &offset);
+    d3dDeviceContext->PSSetShaderResources(0u, 1u, d3dShaderResourceView.GetAddressOf());
+    d3dDeviceContext->PSSetSamplers(0u, 1u, d3dSamplerState.GetAddressOf());
+    d3dDeviceContext->Draw(6u, 0u);
+
+
+    HRESULT h = dxgiSwapChain->Present(1, NULL);
+    int s = 0;
 };
 
 
@@ -170,32 +211,47 @@ void ClearBuffer(Microsoft::WRL::ComPtr<ID3D11DeviceContext>    d3dDeviceContext
 };
 
 
-void ProcessFrame(Microsoft::WRL::ComPtr<ID3D11DeviceContext>    d3dDeviceContext,
-                  Microsoft::WRL::ComPtr<IDXGISwapChain>         dxgiSwapChain,
-                  Microsoft::WRL::ComPtr<ID3D11Device>           d3dDevice,
-                  Microsoft::WRL::ComPtr<ID3D11RenderTargetView> d3dRendererTraget,
-                  Microsoft::WRL::ComPtr<ID3D11Texture2D>	     d3dTexture)
+void ProcessFrame(Microsoft::WRL::ComPtr<ID3D11DeviceContext>      d3dDeviceContext,
+                  Microsoft::WRL::ComPtr<IDXGISwapChain>           dxgiSwapChain,
+                  Microsoft::WRL::ComPtr<ID3D11Device>             d3dDevice,
+                  Microsoft::WRL::ComPtr<ID3D11RenderTargetView>   d3dRendererTraget,
+                  Microsoft::WRL::ComPtr<ID3D11Buffer>             d3dVertexBuffer,
+                  Microsoft::WRL::ComPtr<ID3D11PixelShader>        d3dPixelShader,
+                  Microsoft::WRL::ComPtr<ID3D11VertexShader>       d3dVertexShader,
+                  Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> d3dShaderResourceView,
+                  Microsoft::WRL::ComPtr<ID3D11SamplerState>       d3dSamplerState,
+                  Microsoft::WRL::ComPtr<ID3D11InputLayout>        d3dInputLayout,
+                  int                                              windowWidth,
+                  int                                              windowHeight,
+                  Colour* pixelData)
 {
     Microsoft::WRL::ComPtr<ID3D11Resource> d3dBackBufferResource;
     COM_CALL(dxgiSwapChain->GetBuffer(0, IID_PPV_ARGS(&d3dBackBufferResource)));
 
     COM_CALL(d3dDevice->CreateRenderTargetView(d3dBackBufferResource.Get(), nullptr, d3dRendererTraget.GetAddressOf()));
 
-    ClearBuffer(d3dDeviceContext, d3dRendererTraget, 1.0f, 0.0f, 1.0f);
 
+    //ClearBuffer(d3dDeviceContext, d3dRendererTraget, 1.0f, 0.0f, 1.0f);
 
-
-    EndFrame(d3dDeviceContext, dxgiSwapChain, d3dTexture);
+    EndFrame(d3dDeviceContext, dxgiSwapChain, d3dVertexBuffer, d3dInputLayout, d3dPixelShader, d3dVertexShader, d3dShaderResourceView, d3dSamplerState, pixelData, windowWidth, windowHeight);
 };
 
 
 
 int WindowLoop(HWND hwnd,
-               Microsoft::WRL::ComPtr<ID3D11DeviceContext>    d3dDeviceContext,
-               Microsoft::WRL::ComPtr<IDXGISwapChain>         dxgiSwapChain,
-               Microsoft::WRL::ComPtr<ID3D11Device>           d3dDevice,
-               Microsoft::WRL::ComPtr<ID3D11RenderTargetView> d3dRendererTraget,
-               Microsoft::WRL::ComPtr<ID3D11Texture2D>	      d3dTexture)
+               Microsoft::WRL::ComPtr<ID3D11DeviceContext>      d3dDeviceContext,
+               Microsoft::WRL::ComPtr<IDXGISwapChain>           dxgiSwapChain,
+               Microsoft::WRL::ComPtr<ID3D11Device>             d3dDevice,
+               Microsoft::WRL::ComPtr<ID3D11RenderTargetView>   d3dRendererTraget,
+               Microsoft::WRL::ComPtr<ID3D11Buffer>             d3dVertexBuffer,
+               Microsoft::WRL::ComPtr<ID3D11InputLayout>        d3dInputLayout,
+               Microsoft::WRL::ComPtr<ID3D11PixelShader>        d3dPixelShader,
+               Microsoft::WRL::ComPtr<ID3D11VertexShader>       d3dVertexShader,
+               Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> d3dShaderResourceView,
+               Microsoft::WRL::ComPtr<ID3D11SamplerState>       d3dSamplerState,
+               int                                              windowWidth,
+               int                                              windowHeight,
+               Colour* pixelData)
 {
     // Windows message loop
     MSG message;
@@ -223,7 +279,7 @@ int WindowLoop(HWND hwnd,
             DispatchMessageW(&message);
         };
 
-        ProcessFrame(d3dDeviceContext, dxgiSwapChain, d3dDevice, d3dRendererTraget, d3dTexture);
+        ProcessFrame(d3dDeviceContext, dxgiSwapChain, d3dDevice, d3dRendererTraget, d3dVertexBuffer, d3dPixelShader, d3dVertexShader, d3dShaderResourceView, d3dSamplerState, d3dInputLayout, windowWidth, windowHeight, pixelData);
     };
 
     DestroyWindow(hwnd);
@@ -332,10 +388,11 @@ void CreateBuffer(Microsoft::WRL::ComPtr<ID3D11Device>  d3dDevice,
     unsigned int numberOfVertices = ARRAYSIZE(vertices);
 
     D3D11_BUFFER_DESC d3dBufferDescriptor = { 0 };
-    d3dBufferDescriptor.Usage = D3D11_USAGE::D3D11_USAGE_DEFAULT;
+    d3dBufferDescriptor.Usage = D3D11_USAGE::D3D11_USAGE_DYNAMIC;
     d3dBufferDescriptor.ByteWidth = sizeof(Vertex) * numberOfVertices;
-    d3dBufferDescriptor.CPUAccessFlags = 0;
+    d3dBufferDescriptor.CPUAccessFlags = D3D11_CPU_ACCESS_FLAG::D3D11_CPU_ACCESS_WRITE;// | D3D11_CPU_ACCESS_FLAG::D3D11_CPU_ACCESS_READ;
     d3dBufferDescriptor.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_VERTEX_BUFFER;
+    //d3dBufferDescriptor.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_SHADER_RESOURCE;
 
     D3D11_SUBRESOURCE_DATA d3dSubResourceData = { 0 };
     d3dSubResourceData.pSysMem = vertices;
@@ -361,15 +418,22 @@ void CreateInputLayout(Microsoft::WRL::ComPtr<ID3D11Device>       d3dDevice,
              vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), d3dInputLayout.GetAddressOf()));
 };
 
+
 void CreateSamplerState(Microsoft::WRL::ComPtr<ID3D11Device>        d3dDevice,
                         Microsoft::WRL::ComPtr<ID3D11SamplerState>& d3dSamplerState)
 {
     D3D11_SAMPLER_DESC smaplerDescriptor;
     smaplerDescriptor.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+
     smaplerDescriptor.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
     smaplerDescriptor.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
     smaplerDescriptor.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+
+    smaplerDescriptor.MipLODBias = 0;
+    smaplerDescriptor.MaxAnisotropy = 0;
+
     smaplerDescriptor.ComparisonFunc = D3D11_COMPARISON_NEVER;
+
     smaplerDescriptor.MinLOD = 0;
     smaplerDescriptor.MaxLOD = D3D11_FLOAT32_MAX;
 
@@ -420,8 +484,11 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
     Microsoft::WRL::ComPtr<ID3D11SamplerState> d3dSamplerState;
 
-    Colour* pixelData = new Colour[static_cast<std::size_t>(windowWidth) * static_cast<std::size_t>(windowHeight)];
 
+    Colour* pixelData = new Colour[static_cast<std::size_t>(windowWidth) * static_cast<std::size_t>(windowHeight)];
+    memset(pixelData, 0, (static_cast<std::size_t>(windowWidth) * static_cast<std::size_t>(windowHeight)) * sizeof(Colour));
+
+    pixelData[50 * windowWidth + 50] = { 255, 0, 0 };
 
     // Craete dxgi factory
     Microsoft::WRL::ComPtr<IDXGIFactory> dxgiFactory;
@@ -489,7 +556,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
     CreateSamplerState(d3dDevice, d3dSamplerState);
 
-    int exitCode = WindowLoop(hwnd, d3dDeviceContext, dxgiSwapChain, d3dDevice, d3dRendererTraget, d3d2DTexture);
+    int exitCode = WindowLoop(hwnd, d3dDeviceContext, dxgiSwapChain, d3dDevice, d3dRendererTraget, d3dVertexBuffer, d3dInputLayout, d3dPixelShader, d3dVertexShader, d3dShaderResourceView, d3dSamplerState, windowWidth, windowHeight, pixelData);
 
     return exitCode;
 };
