@@ -7,9 +7,11 @@
 #include <dxgi.h>
 #include <dxgi1_3.h>
 #include <windows.graphics.directx.direct3d11.interop.h>
+#include <D3DCompiler.h>
 
 #pragma comment(lib, "DXGI.lib")
-#pragma comment(lib,"d3d11.lib")
+#pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "D3DCompiler.lib")
 
 // A macro used to debug COM functions.
 // Creates a scoped variable of type HRESULT and stores the retured function value,
@@ -36,6 +38,23 @@ void _COM_CALL(HRESULT hResult)
     }
 }
 
+
+struct Colour
+{
+    std::uint8_t Red;
+    std::uint8_t Green;
+    std::uint8_t Blue;
+};
+
+struct Vertex
+{
+    float X;
+    float Y;
+    float Z;
+
+    float TextureX;
+    float TextureY;
+};
 
 // Takes a DWORD error code and returns its string message 
 std::wstring GetErrorStringW(DWORD error)
@@ -78,7 +97,9 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 
 
 
-HWND CreateMainWindow(HINSTANCE hInstance, const wchar_t* windowClassName, const wchar_t* windowTitle)
+HWND CreateMainWindow(HINSTANCE hInstance,
+                      int windowWidth, int windowHeight,
+                      const wchar_t* windowClassName, const wchar_t* windowTitle)
 {
     // Create the main window
     WNDCLASSEXW windowClass = { 0 };
@@ -111,7 +132,7 @@ HWND CreateMainWindow(HINSTANCE hInstance, const wchar_t* windowClassName, const
                                       windowTitle,
                                       WS_CAPTION | WS_BORDER | WS_SYSMENU | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SIZEBOX,
                                       0, 0,
-                                      800, 500,
+                                      windowWidth, windowHeight,
                                       NULL,
                                       NULL,
                                       hInstance,
@@ -123,8 +144,11 @@ HWND CreateMainWindow(HINSTANCE hInstance, const wchar_t* windowClassName, const
 
 
 
-void EndFrame(Microsoft::WRL::ComPtr<IDXGISwapChain> dxgiSwapChain)
+void EndFrame(Microsoft::WRL::ComPtr<ID3D11DeviceContext> d3dDeviceContext,
+              Microsoft::WRL::ComPtr<IDXGISwapChain>      dxgiSwapChain,
+              Microsoft::WRL::ComPtr<ID3D11Texture2D>	  d3dTexture)
 {
+
     dxgiSwapChain->Present(1, NULL);
 };
 
@@ -143,21 +167,24 @@ void ClearBuffer(Microsoft::WRL::ComPtr<ID3D11DeviceContext>    d3dDeviceContext
 
     d3dDeviceContext->ClearRenderTargetView(d3dRendererTraget.Get(), colour);
 };
-              
+
 
 void ProcessFrame(Microsoft::WRL::ComPtr<ID3D11DeviceContext>    d3dDeviceContext,
                   Microsoft::WRL::ComPtr<IDXGISwapChain>         dxgiSwapChain,
                   Microsoft::WRL::ComPtr<ID3D11Device>           d3dDevice,
-                  Microsoft::WRL::ComPtr<ID3D11RenderTargetView> d3dRendererTraget)
+                  Microsoft::WRL::ComPtr<ID3D11RenderTargetView> d3dRendererTraget,
+                  Microsoft::WRL::ComPtr<ID3D11Texture2D>	     d3dTexture)
 {
     Microsoft::WRL::ComPtr<ID3D11Resource> d3dBackBufferResource;
     COM_CALL(dxgiSwapChain->GetBuffer(0, IID_PPV_ARGS(&d3dBackBufferResource)));
 
     COM_CALL(d3dDevice->CreateRenderTargetView(d3dBackBufferResource.Get(), nullptr, d3dRendererTraget.GetAddressOf()));
 
-    ClearBuffer(d3dDeviceContext, d3dRendererTraget, 1.0f, 1.0f, 1.0f);
+    ClearBuffer(d3dDeviceContext, d3dRendererTraget, 1.0f, 0.0f, 1.0f);
 
-    EndFrame(dxgiSwapChain);
+
+
+    EndFrame(d3dDeviceContext, dxgiSwapChain, d3dTexture);
 };
 
 
@@ -166,7 +193,8 @@ int WindowLoop(HWND hwnd,
                Microsoft::WRL::ComPtr<ID3D11DeviceContext>    d3dDeviceContext,
                Microsoft::WRL::ComPtr<IDXGISwapChain>         dxgiSwapChain,
                Microsoft::WRL::ComPtr<ID3D11Device>           d3dDevice,
-               Microsoft::WRL::ComPtr<ID3D11RenderTargetView> d3dRendererTraget)
+               Microsoft::WRL::ComPtr<ID3D11RenderTargetView> d3dRendererTraget,
+               Microsoft::WRL::ComPtr<ID3D11Texture2D>	      d3dTexture)
 {
     // Windows message loop
     MSG message;
@@ -194,7 +222,7 @@ int WindowLoop(HWND hwnd,
             DispatchMessageW(&message);
         };
 
-        ProcessFrame(d3dDeviceContext, dxgiSwapChain, d3dDevice, d3dRendererTraget);
+        ProcessFrame(d3dDeviceContext, dxgiSwapChain, d3dDevice, d3dRendererTraget, d3dTexture);
     };
 
     DestroyWindow(hwnd);
@@ -202,13 +230,107 @@ int WindowLoop(HWND hwnd,
 };
 
 
+void CreateD3D2DTexture(D3D11_TEXTURE2D_DESC& d3d2DTextureDescriptor,
+                        int windowWidth,
+                        int windowHeight,
+                        Microsoft::WRL::ComPtr<ID3D11Device>    d3dDevice,
+                        Microsoft::WRL::ComPtr<ID3D11Texture2D>& d3dTexture)
+{
+    d3d2DTextureDescriptor.Width = windowWidth;
+    d3d2DTextureDescriptor.Height = windowHeight;
+
+    d3d2DTextureDescriptor.MipLevels = 1;
+
+    d3d2DTextureDescriptor.ArraySize = 1;
+
+    d3d2DTextureDescriptor.Format = DXGI_FORMAT::DXGI_FORMAT_B8G8R8A8_UNORM;
+
+    d3d2DTextureDescriptor.SampleDesc.Count = 1;
+    d3d2DTextureDescriptor.SampleDesc.Quality = 0;
+
+    d3d2DTextureDescriptor.Usage = D3D11_USAGE::D3D11_USAGE_DYNAMIC;
+
+    d3d2DTextureDescriptor.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_SHADER_RESOURCE;
+
+    d3d2DTextureDescriptor.CPUAccessFlags = D3D11_CPU_ACCESS_FLAG::D3D11_CPU_ACCESS_WRITE;
+
+    d3d2DTextureDescriptor.MiscFlags = 0;
+
+
+    COM_CALL(d3dDevice->CreateTexture2D(&d3d2DTextureDescriptor, nullptr, d3dTexture.GetAddressOf()));
+};
+
+
+void CreateShaderResourceView(const D3D11_TEXTURE2D_DESC& d3d2DTextureDescriptor,
+                              Microsoft::WRL::ComPtr<ID3D11Device> d3dDevice,
+                              Microsoft::WRL::ComPtr<ID3D11Texture2D> d3dTexture,
+                              Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>& d3dShaderResourceView)
+{
+    D3D11_SHADER_RESOURCE_VIEW_DESC d3dShaderResourceViewDescriptor = { };
+
+    d3dShaderResourceViewDescriptor.Format = d3d2DTextureDescriptor.Format;
+    d3dShaderResourceViewDescriptor.ViewDimension = D3D11_SRV_DIMENSION::D3D11_SRV_DIMENSION_TEXTURE2D;
+    d3dShaderResourceViewDescriptor.Texture2D.MipLevels = 1;
+
+    COM_CALL(d3dDevice->CreateShaderResourceView(d3dTexture.Get(), &d3dShaderResourceViewDescriptor, d3dShaderResourceView.GetAddressOf()));
+};
+
+
+void CreatePixelShader(Microsoft::WRL::ComPtr<ID3D11Device> d3dDevice, Microsoft::WRL::ComPtr<ID3D11PixelShader>& d3dPixelShader)
+{
+    const char* pixelShaderTargetProfile = "ps_5_0";
+    const char* pixelShaderEntryPoint = "main";
+    const wchar_t* pixelShaderFileName = L"DefaultPixelShader.hlsl";
+
+    int pixelShaderFlags = D3DCOMPILE_DEBUG;
+
+    Microsoft::WRL::ComPtr<ID3DBlob> shaderBlob = nullptr;
+    Microsoft::WRL::ComPtr<ID3DBlob> errorBlob = nullptr;
+
+    COM_CALL(D3DCompileFromFile(pixelShaderFileName, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, pixelShaderEntryPoint, pixelShaderTargetProfile, pixelShaderFlags, 0, shaderBlob.GetAddressOf(), errorBlob.GetAddressOf()));
+
+    COM_CALL(d3dDevice->CreatePixelShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), nullptr, d3dPixelShader.GetAddressOf()));
+};
+
+
+
+void CreateBuffer(Microsoft::WRL::ComPtr<ID3D11Device> d3dDevice,
+                  Microsoft::WRL::ComPtr<ID3D11Buffer>& d3dBuffer)
+{
+    const Vertex vertices[] =
+    {
+        { -1.0f,  1.0f, 0.5f, 0.0f, 0.0f },
+        {  1.0f,  1.0f, 0.5f, 1.0f, 0.0f },
+        {  1.0f, -1.0f, 0.5f, 1.0f, 1.0f },
+        { -1.0f,  1.0f, 0.5f, 0.0f, 0.0f },
+        {  1.0f, -1.0f, 0.5f, 1.0f, 1.0f },
+        { -1.0f, -1.0f, 0.5f, 0.0f, 1.0f },
+    };
+
+    D3D11_BUFFER_DESC d3dBufferDescriptor = { 0 };
+    d3dBufferDescriptor.Usage = D3D11_USAGE::D3D11_USAGE_DEFAULT;
+    d3dBufferDescriptor.ByteWidth = sizeof(Vertex) * (ARRAYSIZE(vertices));
+    d3dBufferDescriptor.CPUAccessFlags = 0;
+    d3dBufferDescriptor.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_VERTEX_BUFFER;
+
+    D3D11_SUBRESOURCE_DATA d3dSubResourceData = { 0 };
+    d3dSubResourceData.pSysMem = vertices;
+
+    COM_CALL(d3dDevice->CreateBuffer(&d3dBufferDescriptor, &d3dSubResourceData, d3dBuffer.GetAddressOf()));
+};
+
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nShowCmd)
 {
     const wchar_t* windowClassName = L"Window class";
     const wchar_t* windowTitle = L"Title";
 
-    HWND hwnd = CreateMainWindow(hInstance, windowClassName, windowTitle);
+    int windowWidth = 800;
+    int windowHeight = 500;
+
+    HWND hwnd = CreateMainWindow(hInstance,
+                                 windowWidth, windowHeight,
+                                 windowClassName, windowTitle);
 
     // Show the main window
     ShowWindow(hwnd, nShowCmd);
@@ -222,8 +344,18 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     // Create pointer to the swap chain
     Microsoft::WRL::ComPtr<IDXGISwapChain> dxgiSwapChain;
 
-
     Microsoft::WRL::ComPtr<ID3D11RenderTargetView> d3dRendererTraget;
+
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d2DTexture;
+
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> d3dShaderResourceView;
+
+    Microsoft::WRL::ComPtr<ID3D11PixelShader> d3dPixelShader;
+
+    Microsoft::WRL::ComPtr<ID3D11Buffer> d3dBuffer;
+
+    Colour* pixelData = new Colour[static_cast<std::size_t>(windowWidth) * static_cast<std::size_t>(windowHeight)];
+
 
     // Craete dxgi factory
     Microsoft::WRL::ComPtr<IDXGIFactory> dxgiFactory;
@@ -272,7 +404,20 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
              d3dDeviceContext.GetAddressOf()));
 
 
-    int exitCode = WindowLoop(hwnd, d3dDeviceContext, dxgiSwapChain, d3dDevice, d3dRendererTraget);
+    D3D11_TEXTURE2D_DESC d3d2DTextureDescriptor = { 0 };
+    CreateD3D2DTexture(d3d2DTextureDescriptor,
+                       windowWidth, windowHeight,
+                       d3dDevice,
+                       d3d2DTexture);
+
+
+    CreateShaderResourceView(d3d2DTextureDescriptor, d3dDevice, d3d2DTexture, d3dShaderResourceView);
+
+    CreatePixelShader(d3dDevice, d3dPixelShader);
+
+    CreateBuffer(d3dDevice, d3dBuffer);
+
+    int exitCode = WindowLoop(hwnd, d3dDeviceContext, dxgiSwapChain, d3dDevice, d3dRendererTraget, d3d2DTexture);
 
     return exitCode;
 };
