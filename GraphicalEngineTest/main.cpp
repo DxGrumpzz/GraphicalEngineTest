@@ -293,6 +293,22 @@ void CreatePixelShader(Microsoft::WRL::ComPtr<ID3D11Device> d3dDevice, Microsoft
 };
 
 
+void CreateVertexShader(Microsoft::WRL::ComPtr<ID3D11Device> d3dDevice, Microsoft::WRL::ComPtr<ID3D11VertexShader>& d3dVertexShader)
+{
+    const char* vertexShaderTargetProfile = "vs_5_0";
+    const char* vertexShaderEntryPoint = "main";
+    const wchar_t* vertexShaderFileName = L"DefaultVertexShader.hlsl";
+
+    int pixelShaderFlags = D3DCOMPILE_DEBUG;
+
+    Microsoft::WRL::ComPtr<ID3DBlob> shaderBlob = nullptr;
+    Microsoft::WRL::ComPtr<ID3DBlob> errorBlob = nullptr;
+
+    COM_CALL(D3DCompileFromFile(vertexShaderFileName, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, vertexShaderEntryPoint, vertexShaderTargetProfile, pixelShaderFlags, 0, shaderBlob.GetAddressOf(), errorBlob.GetAddressOf()));
+
+    COM_CALL(d3dDevice->CreateVertexShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), nullptr, d3dVertexShader.GetAddressOf()));
+}
+
 
 void CreateBuffer(Microsoft::WRL::ComPtr<ID3D11Device> d3dDevice,
                   Microsoft::WRL::ComPtr<ID3D11Buffer>& d3dBuffer)
@@ -319,6 +335,11 @@ void CreateBuffer(Microsoft::WRL::ComPtr<ID3D11Device> d3dDevice,
     COM_CALL(d3dDevice->CreateBuffer(&d3dBufferDescriptor, &d3dSubResourceData, d3dBuffer.GetAddressOf()));
 };
 
+
+void CreateInputLayout(Microsoft::WRL::ComPtr<ID3D11InputLayout> d3dInputLayout)
+{
+
+};
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nShowCmd)
 {
@@ -352,7 +373,12 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
     Microsoft::WRL::ComPtr<ID3D11PixelShader> d3dPixelShader;
 
+    Microsoft::WRL::ComPtr<ID3D11VertexShader> d3dVertexShader;
+
     Microsoft::WRL::ComPtr<ID3D11Buffer> d3dBuffer;
+
+    Microsoft::WRL::ComPtr<ID3D11InputLayout> d3dInputLayout;
+
 
     Colour* pixelData = new Colour[static_cast<std::size_t>(windowWidth) * static_cast<std::size_t>(windowHeight)];
 
@@ -414,6 +440,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     CreateShaderResourceView(d3d2DTextureDescriptor, d3dDevice, d3d2DTexture, d3dShaderResourceView);
 
     CreatePixelShader(d3dDevice, d3dPixelShader);
+
+    CreateVertexShader(d3dDevice, d3dVertexShader);
 
     CreateBuffer(d3dDevice, d3dBuffer);
 
