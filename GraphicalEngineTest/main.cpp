@@ -223,17 +223,53 @@ void ClearBuffer(float red, float green, float blue)
 };
 
 
+float accumualtor = 0.0f;
+float fadeInOutSpeed = 0.05f;
+
+bool fadeIn = true;
+
+double PI = 22 / 7;
+
 void ProcessFrame()
 {
     memset(pixelData, 0, (windowWidth * windowHeight) * sizeof(Colour));
+
+    float sineResult = sinf(accumualtor);
 
     for (size_t x = 0; x < 50; x++)
     {
         for (size_t y = 0; y < 50; y++)
         {
-            pixelData[((x + 5) + windowWidth * (y + 5))] = { 255, 0, 0, 10 };
+            Colour colour;
+            colour.Red =   sineResult * 255;
+            colour.Green = 0.0f; //sineResult * 255;
+            colour.Blue =  0.0f; //sineResult * 255;
+            colour.A = 1.0f;
+
+            pixelData[((x + 5) + windowWidth * (y + 5))] = colour;
         };
     };
+
+    if (fadeIn == true)
+    {
+        accumualtor += fadeInOutSpeed;
+
+        if (accumualtor > (PI / 2))
+        {
+            fadeIn = false;
+        };
+    }
+    else
+    {
+        accumualtor -= fadeInOutSpeed;
+
+        if (accumualtor <= 0)
+        {
+            accumualtor = 0;
+            fadeIn = true;
+        };
+    };
+
 
     EndFrame();
 };
@@ -286,7 +322,7 @@ void CreateD3D2DTexture(D3D11_TEXTURE2D_DESC& d3d2DTextureDescriptor)
 
     d3d2DTextureDescriptor.ArraySize = 1;
 
-    d3d2DTextureDescriptor.Format = DXGI_FORMAT::DXGI_FORMAT_B8G8R8A8_UNORM;
+    d3d2DTextureDescriptor.Format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM;
 
     d3d2DTextureDescriptor.SampleDesc.Count = 1;
     d3d2DTextureDescriptor.SampleDesc.Quality = 0;
@@ -390,8 +426,8 @@ void CreateInputLayout()
     COM_CALL(d3dDevice->CreateInputLayout(inputElementDescriptor,
              // Passing 2 because the Vertex shader expects 2 arguments
              2,
-             vertexShaderBlob->GetBufferPointer(), 
-             vertexShaderBlob->GetBufferSize(), 
+             vertexShaderBlob->GetBufferPointer(),
+             vertexShaderBlob->GetBufferSize(),
              d3dInputLayout.GetAddressOf()));
 };
 
@@ -442,7 +478,8 @@ void SetupDirectX(HWND hwnd)
     swapChainDescriptor.BufferDesc.RefreshRate.Numerator = 1;
     swapChainDescriptor.BufferDesc.RefreshRate.Denominator = 60;
 
-    swapChainDescriptor.BufferDesc.Format = DXGI_FORMAT::DXGI_FORMAT_B8G8R8A8_UNORM;
+    swapChainDescriptor.BufferDesc.Format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM;
+    
 
     swapChainDescriptor.SampleDesc.Count = 1;
     swapChainDescriptor.SampleDesc.Quality = 0;
