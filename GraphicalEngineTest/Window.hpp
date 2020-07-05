@@ -62,6 +62,8 @@ public:
         _windowHeight(windowHeight)
     {
         CreateWindowHandle();
+
+
     };
 
     ~Window()
@@ -114,7 +116,6 @@ public:
     {
         return _hwnd;
     };
-
 
 private:
 
