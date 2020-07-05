@@ -10,58 +10,14 @@
 #include <D3DCompiler.h>
 
 #include "Window.h"
+#include "WindowsUtilities.h"
 
 #pragma comment(lib, "DXGI.lib")
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "D3DCompiler.lib")
 
-// A macro used to debug COM functions.
-// Creates a scoped variable of type HRESULT and stores the retured function value,
-// using COM's FAILED macro, checks if the result is valid or not
-#define COM_CALL(function) _COM_CALL(function)              
 
-
-void _COM_CALL(HRESULT hResult)
-{
-    if (FAILED(hResult))
-    {
-        _com_error err(hResult);
-
-        size_t charactersConverted = 0;
-
-        size_t errorMessageLength = wcslen(err.ErrorMessage()) + 1;
-        char* errorMessageNarrow = new char[errorMessageLength + 0] { 0 };
-
-        wcstombs_s(&charactersConverted, errorMessageNarrow, errorMessageLength, err.ErrorMessage(), errorMessageLength);
-
-        throw std::exception(errorMessageNarrow);
-
-        delete[] errorMessageNarrow;
-        errorMessageNarrow = nullptr;
-    }
-}
-
-
-// Takes a DWORD error code and returns its string message 
-std::wstring GetErrorStringW(DWORD error)
-{
-    // Stores the error message as a string in memory
-    LPWSTR buffer = nullptr;
-
-    // Format DWORD error ID to a string 
-    FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                   NULL,
-                   error,
-                   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                   (LPWSTR)&buffer, 0, NULL);
-
-    // Create std string from buffer
-    std::wstring message(buffer);
-
-    return message;
-};
-
-
+using namespace WindowsUtilities;
 
 /// <summary>
 /// Simple pixel colour data structure
