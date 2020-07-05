@@ -160,14 +160,14 @@ public:
 
     void DrawPixel(int x, int y, const Colour& pixelColour = { 255, 255, 255, 1 }, bool checkBounds = true)
     {
-        if (x < 0 || x > _windowWidth)
+        if (x < 0 || x >=_windowWidth)
         {
             if (checkBounds == true)
                 throw std::exception("X is out of bounds");
             else
                 return;
         }
-        else if (y < 0 || y > _windowWidth)
+        else if (y < 0 || y >= _windowHeight)
         {
             if (checkBounds == true)
                 throw std::exception("Y is out of bounds");
