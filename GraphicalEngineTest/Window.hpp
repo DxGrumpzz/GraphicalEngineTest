@@ -8,6 +8,8 @@
 /// </summary>
 class Window
 {
+    // Undefining CreateWindow macro so we can use a function with the same name
+    #undef CreateWindow
 
 private:
 
@@ -61,8 +63,7 @@ public:
         _windowWidth(windowWidth),
         _windowHeight(windowHeight)
     {
-        CreateWindowHandle();
-
+        CreateWindow();
 
     };
 
@@ -189,7 +190,7 @@ private:
     /// <summary>
     /// Creates the window handle
     /// </summary>
-    void CreateWindowHandle()
+    void CreateWindow()
     {
         // Create the main window
         WNDCLASSEXW windowClass = { 0 };
@@ -206,13 +207,28 @@ private:
         // Register the window class
         RegisterClassExW(&windowClass);
 
+        RECT windowRect;
+        windowRect.top = 50;
+        windowRect.left = 50;
+        
+        windowRect.bottom = _windowHeight + windowRect.top;
+        windowRect.right = _windowWidth + windowRect.left;
+
+        
+        DWORD windowStyles = WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU;
+
+        // Apparently this function is VERY important if you don't want your draw calls to skip pixel lines(???)
+        AdjustWindowRect(&windowRect, windowStyles, false);
+
         // Create the actual window
         _hwnd = CreateWindowExW(0,
                                 _windowClassName.c_str(),
                                 _windowTitle.c_str(),
-                                WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU,
-                                0, 0,
-                                _windowWidth, _windowHeight,
+                                windowStyles,
+                                windowRect.left, windowRect.top, 
+                                // To not skip vertical/horizontal lines when drawing we must specify window width and height 
+                                // based on the differences between right - left and bottom - top
+                                windowRect.right - windowRect.left, windowRect.bottom - windowRect.top,
                                 nullptr,
                                 nullptr,
                                 _hInstance,
