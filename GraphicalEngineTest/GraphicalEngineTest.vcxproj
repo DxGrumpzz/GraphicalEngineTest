@@ -164,8 +164,9 @@
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Window.h" />
-    <ClInclude Include="WindowsUtilities.h" />
+    <ClInclude Include="Graphics.hpp" />
+    <ClInclude Include="Window.hpp" />
+    <ClInclude Include="WindowsUtilities.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

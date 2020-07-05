@@ -9,8 +9,8 @@
 #include <windows.graphics.directx.direct3d11.interop.h>
 #include <D3DCompiler.h>
 
-#include "Window.h"
-#include "WindowsUtilities.h"
+#include "Window.hpp"
+#include "WindowsUtilities.hpp"
 
 #pragma comment(lib, "DXGI.lib")
 #pragma comment(lib, "d3d11.lib")
