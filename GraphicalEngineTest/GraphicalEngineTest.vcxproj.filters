@@ -4,6 +4,9 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{d3ac9942-feab-4037-a922-72495e50ceec}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Graphics">
+      <UniqueIdentifier>{84890b0d-c70e-412b-8726-ed8b3c0ccf0c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="DefaultPixelShader.hlsl">
@@ -17,8 +20,16 @@
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Graphics.hpp" />
     <ClInclude Include="Window.hpp" />
     <ClInclude Include="WindowsUtilities.hpp" />
+    <ClInclude Include="Graphics\Graphics.hpp">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Colour.hpp">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Vertex.hpp">
+      <Filter>Graphics</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

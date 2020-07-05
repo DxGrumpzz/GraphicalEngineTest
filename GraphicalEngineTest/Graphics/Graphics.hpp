@@ -1,10 +1,11 @@
 #pragma once
-#include <cstdint>
 #include <d3d11.h>
 #include <wrl/client.h>
 #include <d3dcompiler.h>
 
 #include "WindowsUtilities.hpp"
+#include "Colour.hpp"
+#include "Vertex.hpp"
 
 #pragma comment(lib, "DXGI.lib")
 #pragma comment(lib, "d3d11.lib")
@@ -16,33 +17,6 @@
 /// </summary>
 class Graphics
 {
-
-private:
-
-    /// <summary>
-    /// Simple pixel colour data structure
-    /// </summary>
-    struct Colour
-    {
-        std::uint8_t Red;
-        std::uint8_t Green;
-        std::uint8_t Blue;
-
-        std::uint8_t Alpha;
-    };
-
-    struct Vertex
-    {
-        float X;
-        float Y;
-        float Z;
-
-        float TextureX;
-        float TextureY;
-    };
-
-
-
 private:
 
 
