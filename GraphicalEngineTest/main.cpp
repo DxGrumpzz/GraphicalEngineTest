@@ -9,6 +9,8 @@
 #include <windows.graphics.directx.direct3d11.interop.h>
 #include <D3DCompiler.h>
 
+#include "Window.h"
+
 #pragma comment(lib, "DXGI.lib")
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "D3DCompiler.lib")
@@ -311,7 +313,7 @@ void CreateVertexShader()
     COM_CALL(D3DCompileFromFile(vertexShaderFileName, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, vertexShaderEntryPoint, vertexShaderTargetProfile, pixelShaderFlags, 0, vertexShaderBlob.GetAddressOf(), errorBlob.GetAddressOf()));
 
     COM_CALL(d3dDevice->CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), nullptr, d3dVertexShader.GetAddressOf()));
-}
+};
 
 
 
@@ -494,42 +496,18 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     // Title of this window
     const wchar_t* windowTitle = L"DirectX Window";
 
-    // Create the main window
-    HWND hwnd = CreateMainWindow(hInstance, windowClassName, windowTitle);
+    Window* window = new Window(windowWidth, windowHeight,
+                                hInstance,
+                                windowClassName,
+                                windowTitle);
 
-    // Show the main window
-    ShowWindow(hwnd, nShowCmd);
+    window->ShowWindow();
 
     // Setup directX components
-    SetupDirectX(hwnd);
+    SetupDirectX(window->GetHWND());
 
-
-    // Windows message loop
-    MSG message;
-    bool processMessages = true;
-
-    // Continuously try and get message
-    while (processMessages)
+    while (window->ProcessMessageBuffer())
     {
-        // Peek message returns 1 if there a message is available, 
-        // If there are none it will return 0.
-        // So we continually loop as long as there are messages in queue
-        while (PeekMessageW(&message, NULL, 0, 0, PM_REMOVE))
-        {
-            // To exit the infinite loop check if the current message was a quit message
-            if (message.message == WM_QUIT)
-            {
-                processMessages = false;
-                break;
-            };
-
-            // If the message is a keystroke get the key's character value
-            TranslateMessage(&message);
-
-            // Send the message to the Window procedure function
-            DispatchMessageW(&message);
-        };
-
         // Clear pixel buffer
         memset(pixelData, 0, (static_cast<std::size_t>(windowWidth) * static_cast<std::size_t>(windowHeight)) * sizeof(Colour));
 
@@ -543,7 +521,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     };
 
 
-    UnregisterClassW(windowClassName, hInstance);
-
-    return (int)message.wParam;
+    delete window;
+    window = nullptr;
 };
