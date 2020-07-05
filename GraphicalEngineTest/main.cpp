@@ -1,7 +1,3 @@
-
-#define run
-#ifdef run
-
 #include <Windows.h>
 #include <string>
 #include <comdef.h>
@@ -21,6 +17,7 @@
 // Creates a scoped variable of type HRESULT and stores the retured function value,
 // using COM's FAILED macro, checks if the result is valid or not
 #define COM_CALL(function) _COM_CALL(function)              
+
 
 void _COM_CALL(HRESULT hResult)
 {
@@ -43,12 +40,37 @@ void _COM_CALL(HRESULT hResult)
 }
 
 
+// Takes a DWORD error code and returns its string message 
+std::wstring GetErrorStringW(DWORD error)
+{
+    // Stores the error message as a string in memory
+    LPWSTR buffer = nullptr;
+
+    // Format DWORD error ID to a string 
+    FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                   NULL,
+                   error,
+                   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                   (LPWSTR)&buffer, 0, NULL);
+
+    // Create std string from buffer
+    std::wstring message(buffer);
+
+    return message;
+};
+
+
+
+/// <summary>
+/// Simple pixel colour data structure
+/// </summary>
 struct Colour
 {
     std::uint8_t Red;
     std::uint8_t Green;
     std::uint8_t Blue;
-    std::uint8_t A;
+
+    std::uint8_t Alpha;
 };
 
 struct Vertex
@@ -97,33 +119,20 @@ Microsoft::WRL::ComPtr<ID3D11SamplerState> d3dSamplerState;
 
 D3D11_MAPPED_SUBRESOURCE d3dMappedSubResource = { 0 };
 
-
+/// <summary>
+/// The actual pixels that will be drawn on screen
+/// </summary>
 Colour* pixelData = new Colour[static_cast<std::size_t>(windowWidth) * static_cast<std::size_t>(windowHeight)];
 
 
-
-// Takes a DWORD error code and returns its string message 
-std::wstring GetErrorStringW(DWORD error)
-{
-    // Stores the error message as a string in memory
-    LPWSTR buffer = nullptr;
-
-    // Format DWORD error ID to a string 
-    FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                   NULL,
-                   error,
-                   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                   (LPWSTR)&buffer, 0, NULL);
-
-    // Create std string from buffer
-    std::wstring message(buffer);
-
-    return message;
-};
-
-
-
-
+/// <summary>
+/// A window message handler for the main window
+/// </summary>
+/// <param name="hwnd"> Calling(sender) window </param>
+/// <param name="msg"> The recevied Message </param>
+/// <param name="wParam"> Parameter related to received message </param>
+/// <param name="lParam"> Parameter related to received message </param>
+/// <returns></returns>
 LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
@@ -172,6 +181,27 @@ HWND CreateMainWindow(HINSTANCE hInstance, const wchar_t* windowClassName, const
 
 
 
+
+
+void UpdateFrame()
+{
+};
+
+
+void DrawFrame()
+{
+
+    for (size_t x = 0; x < 50; x++)
+    {
+        for (size_t y = 0; y < 50; y++)
+        {
+            pixelData[x + windowWidth * y] = { 255, 0, 0 };
+        };
+    };
+
+};
+
+
 void EndFrame()
 {
     COM_CALL(d3dDeviceContext->Map(d3d2DTexture.Get(), 0, D3D11_MAP::D3D11_MAP_WRITE_DISCARD, 0, &d3dMappedSubResource));
@@ -208,108 +238,6 @@ void EndFrame()
     COM_CALL(dxgiSwapChain->Present(1, NULL));
 };
 
-
-void ClearBuffer(float red, float green, float blue)
-{
-    float colour[] =
-    {
-        red,
-        green,
-        blue,
-        1.0f,
-    };
-
-    d3dDeviceContext->ClearRenderTargetView(d3dRendererTragetView.Get(), colour);
-};
-
-
-float accumualtor = 0.0f;
-float fadeInOutSpeed = 0.05f;
-
-bool fadeIn = true;
-
-double PI = 22 / 7;
-
-void ProcessFrame()
-{
-    memset(pixelData, 0, (windowWidth * windowHeight) * sizeof(Colour));
-
-    float sineResult = sinf(accumualtor);
-
-    for (size_t x = 0; x < 50; x++)
-    {
-        for (size_t y = 0; y < 50; y++)
-        {
-            Colour colour;
-            colour.Red =   sineResult * 255;
-            colour.Green = 0.0f; //sineResult * 255;
-            colour.Blue =  0.0f; //sineResult * 255;
-            colour.A = 1.0f;
-
-            pixelData[((x + 5) + windowWidth * (y + 5))] = colour;
-        };
-    };
-
-    if (fadeIn == true)
-    {
-        accumualtor += fadeInOutSpeed;
-
-        if (accumualtor > (PI / 2))
-        {
-            fadeIn = false;
-        };
-    }
-    else
-    {
-        accumualtor -= fadeInOutSpeed;
-
-        if (accumualtor <= 0)
-        {
-            accumualtor = 0;
-            fadeIn = true;
-        };
-    };
-
-
-    EndFrame();
-};
-
-
-
-int WindowLoop(HWND hwnd)
-{
-    // Windows message loop
-    MSG message;
-    bool processMessages = true;
-
-    // Continuously try and get message
-    while (processMessages)
-    {
-        // Peek message returns 1 if there a message is available, 
-        // If there are none it will return 0.
-        // So we continually loop as long as there are messages in queue
-        while (PeekMessageW(&message, NULL, 0, 0, PM_REMOVE))
-        {
-            // To exit the infinite loop check if the current message was a quit message
-            if (message.message == WM_QUIT)
-            {
-                processMessages = false;
-                break;
-            };
-
-            // If the message is a keystroke get the key's character value
-            TranslateMessage(&message);
-
-            // Send the message to the Window procedure function
-            DispatchMessageW(&message);
-        };
-
-        ProcessFrame();
-    };
-
-    DestroyWindow(hwnd);
-    return (int)message.wParam;
-};
 
 
 
@@ -453,8 +381,9 @@ void CreateSamplerState()
 };
 
 
-void SetupDirectX(HWND hwnd)
+void CreateDeviceAndSwapChain(HWND hwnd)
 {
+
     // Craete dxgi factory
     Microsoft::WRL::ComPtr<IDXGIFactory> dxgiFactory;
     COM_CALL(CreateDXGIFactory(IID_PPV_ARGS(dxgiFactory.GetAddressOf())));
@@ -462,7 +391,8 @@ void SetupDirectX(HWND hwnd)
 
     // Get the first graphics adapter, usually the GPU
     Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
-    dxgiFactory->EnumAdapters(0, adapter.GetAddressOf());
+    COM_CALL(dxgiFactory->EnumAdapters(0, adapter.GetAddressOf()));
+
 
 
     // A data descriptor for the swap chain
@@ -479,7 +409,7 @@ void SetupDirectX(HWND hwnd)
     swapChainDescriptor.BufferDesc.RefreshRate.Denominator = 60;
 
     swapChainDescriptor.BufferDesc.Format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM;
-    
+
 
     swapChainDescriptor.SampleDesc.Count = 1;
     swapChainDescriptor.SampleDesc.Quality = 0;
@@ -507,8 +437,16 @@ void SetupDirectX(HWND hwnd)
              nullptr,
              d3dDeviceContext.GetAddressOf()));
 
+};
+
+
+void SetupDirectX(HWND hwnd)
+{
+    CreateDeviceAndSwapChain(hwnd);
+
+
     Microsoft::WRL::ComPtr<ID3D11Resource> d3dBackBufferResource;
-    COM_CALL(dxgiSwapChain->GetBuffer(0, __uuidof(ID3D11Resource), reinterpret_cast<void**>(d3dBackBufferResource.GetAddressOf())));
+    COM_CALL(dxgiSwapChain->GetBuffer(0, IID_PPV_ARGS(d3dBackBufferResource.GetAddressOf())));
 
 
     COM_CALL(d3dDevice->CreateRenderTargetView(d3dBackBufferResource.Get(), nullptr, d3dRendererTragetView.GetAddressOf()));
@@ -519,8 +457,8 @@ void SetupDirectX(HWND hwnd)
     viewport.TopLeftX = 0;
     viewport.TopLeftY = 0;
 
-    viewport.Width = windowWidth;
-    viewport.Height = windowHeight;
+    viewport.Width = static_cast<float>(windowWidth);
+    viewport.Height = static_cast<float>(windowHeight);
 
     viewport.MinDepth = 0;
     viewport.MaxDepth = 1;
@@ -543,7 +481,6 @@ void SetupDirectX(HWND hwnd)
 
     CreateSamplerState();
 
-    // pixelData = reinterpret_cast<Colour*>(_aligned_malloc(windowWidth * windowHeight * sizeof(Colour), 16u));
     pixelData = new Colour[static_cast<std::size_t>(windowWidth) * static_cast<std::size_t>(windowHeight)];
 };
 
@@ -551,42 +488,62 @@ void SetupDirectX(HWND hwnd)
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nShowCmd)
 {
-    const wchar_t* windowClassName = L"Window class";
-    const wchar_t* windowTitle = L"Title";
+    // Registered name of this window
+    const wchar_t* windowClassName = L"DirectXWindow";
 
+    // Title of this window
+    const wchar_t* windowTitle = L"DirectX Window";
 
+    // Create the main window
     HWND hwnd = CreateMainWindow(hInstance, windowClassName, windowTitle);
 
     // Show the main window
     ShowWindow(hwnd, nShowCmd);
-    UpdateWindow(hwnd);
 
-
-    //memset(pixelData, 0, (static_cast<std::size_t>(windowWidth) * static_cast<std::size_t>(windowHeight)) * sizeof(Colour));
-
+    // Setup directX components
     SetupDirectX(hwnd);
 
 
-    /*
-    //COM_CALL(d3dDevice->CreateRenderTargetView(d3dBackBufferResource.Get(), nullptr, d3dRendererTragetView.GetAddressOf()));
+    // Windows message loop
+    MSG message;
+    bool processMessages = true;
+
+    // Continuously try and get message
+    while (processMessages)
+    {
+        // Peek message returns 1 if there a message is available, 
+        // If there are none it will return 0.
+        // So we continually loop as long as there are messages in queue
+        while (PeekMessageW(&message, NULL, 0, 0, PM_REMOVE))
+        {
+            // To exit the infinite loop check if the current message was a quit message
+            if (message.message == WM_QUIT)
+            {
+                processMessages = false;
+                break;
+            };
+
+            // If the message is a keystroke get the key's character value
+            TranslateMessage(&message);
+
+            // Send the message to the Window procedure function
+            DispatchMessageW(&message);
+        };
+
+        // Clear pixel buffer
+        memset(pixelData, 0, (static_cast<std::size_t>(windowWidth) * static_cast<std::size_t>(windowHeight)) * sizeof(Colour));
+
+        // Update frame function, responsible for input, collision hanlding and such
+        UpdateFrame();
+        // Draw frame function, should be only responsible for drawing, and simple branching logic
+        DrawFrame();
+
+        // End frame and prepare for next one
+        EndFrame();
+    };
 
 
+    UnregisterClassW(windowClassName, hInstance);
 
-    //CreateShaderResourceView(d3d2DTextureDescriptor);
-
-    CreatePixelShader();
-
-    CreateVertexShader();
-
-    CreateBuffer();
-
-    CreateInputLayout();
-
-    CreateSamplerState();
-    */
-
-    int exitCode = WindowLoop(hwnd);
-
-    return exitCode;
+    return (int)message.wParam;
 };
-#endif
