@@ -170,6 +170,7 @@
   <ItemGroup>
     <ClInclude Include="Colour.hpp" />
     <ClInclude Include="Graphics\Graphics.hpp" />
+    <ClInclude Include="Vector2D.hpp" />
     <ClInclude Include="Vertex.hpp" />
     <ClInclude Include="Window.hpp" />
     <ClInclude Include="WindowsUtilities.hpp" />

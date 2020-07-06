@@ -31,5 +31,6 @@
     <ClInclude Include="Vertex.hpp">
       <Filter>Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="Vector2D.hpp" />
   </ItemGroup>
 </Project>
