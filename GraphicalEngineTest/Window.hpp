@@ -1,7 +1,11 @@
 #pragma once
 #include <Windows.h>
+#include <windowsx.h>
 #include <string>
 
+#include "Mouse.hpp"
+#include "Vector2D.hpp"
+#include "WindowsUtilities.hpp"
 
 /// <summary>
 /// A window class, encapsulates normal Windows window functionality into a single class
@@ -12,7 +16,6 @@ class Window
     #undef CreateWindow
 
 private:
-
 
     /// <summary>
     /// Handle to the window
@@ -44,6 +47,8 @@ private:
     /// </summary>
     int _windowHeight;
 
+    Mouse _mouse;
+
 public:
 
     Window(int windowWidth, int windowHeight,
@@ -57,6 +62,7 @@ public:
         _windowWidth(windowWidth),
         _windowHeight(windowHeight)
     {
+
         CreateWindow();
 
     };
@@ -102,6 +108,9 @@ public:
             DispatchMessageW(&message);
         };
 
+        // Handle mouse key events independently from window events
+        HandleMouseEvents();
+
         return true;
     };
 
@@ -112,23 +121,18 @@ public:
         return _hwnd;
     };
 
-private:
-
-
-    /// <summary>
-    /// A window message dispatcher, the only purpose of this function is to dispatch window messages to the instanced WinProc in this class
-    /// </summary>
-    /// <param name="hwnd"></param>
-    /// <param name="msg"></param>
-    /// <param name="wParam"></param>
-    /// <param name="lParam"></param>
-    /// <returns></returns>
-    static LRESULT CALLBACK WinProcDispatch(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+    Vector2D GetMousePosition()
     {
-        // Get Window ptr from bound user data and dispatch window message to the Window's WindowProcedure
-        Window* windowPointer = reinterpret_cast<Window*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
-        return windowPointer->WindowProcedure(hwnd, msg, wParam, lParam);
+        return { static_cast<float>(_mouse.X), static_cast<float>(_mouse.Y) };
     };
+
+    const Mouse& GetMouse()
+    {
+        return _mouse;
+    };
+
+
+private:
 
 
     /// <summary>
@@ -143,6 +147,33 @@ private:
     {
         switch (msg)
         {
+
+            case WM_MOUSEMOVE:
+            {
+                // Get mouse X and X positions
+                _mouse.X = GET_X_LPARAM(lParam);
+                _mouse.Y = GET_Y_LPARAM(lParam);
+
+                _mouse._insideWindow = true;
+
+
+                // To Receive WM_MOUSELEAVE message we need to notify Windows to track mouse events
+                TRACKMOUSEEVENT mouseTrackEvent;
+                mouseTrackEvent.cbSize = sizeof(mouseTrackEvent);
+                mouseTrackEvent.hwndTrack = _hwnd;
+                mouseTrackEvent.dwFlags = TME_LEAVE;
+
+                TrackMouseEvent(&mouseTrackEvent);
+
+                return 0;
+            };
+
+            case WM_MOUSELEAVE:
+            {
+                _mouse._insideWindow = false;
+                return 0;
+            };
+
             case WM_CLOSE:
             {
                 PostQuitMessage(0);
@@ -152,9 +183,6 @@ private:
 
         return DefWindowProcW(hwnd, msg, wParam, lParam);
     };
-
-
-private:
 
     /// <summary>
     /// Creates the window handle
@@ -206,9 +234,81 @@ private:
 
         // Set window user data to point to this class instance
         SetWindowLongPtrW(_hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
-        
+
         // Set window procedure to use the dipatching window procedure
         SetWindowLongPtrW(_hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WinProcDispatch));
+    };
+
+
+    void HandleMouseEvents()
+    {
+        // Handle mouse clicks only if mouse is in bounds of the console
+        if (_mouse.InsideWindow() == true)
+        {
+            _mouse.LeftMouseButton = GetNewMouseKeyState(VK_LBUTTON, _mouse.LeftMouseButton);
+
+            _mouse.RightMouseButton = GetNewMouseKeyState(VK_RBUTTON, _mouse.RightMouseButton);
+        };
+
+    };
+
+
+    /// <summary>
+    /// Returns a MouseKeyState based on a current mouse key state
+    /// </summary>
+    /// <param name="mouseKeyCode"> The mouse button key code </param>
+    /// <param name="previousMouseKey"> The previous mouse key state </param>
+    /// <returns></returns>
+    KeyState GetNewMouseKeyState(int mouseKeyCode, KeyState previousMouseKey)
+    {
+        // Check if mouse button is pressed
+        if (GetAsyncKeyState(mouseKeyCode))
+        {
+            // If mouse key was pressed or held before
+            if (previousMouseKey == KeyState::Held ||
+                previousMouseKey == KeyState::Pressed)
+            {
+                // Set key state to held
+                return KeyState::Held;
+            }
+            // If mouse was None, or released 
+            else
+                // Set mouse to pressed
+                return KeyState::Pressed;
+        }
+        // If nothing happend with the mouse key
+        else
+        {
+            // If mouse key was previously held or pressed
+            if (previousMouseKey == KeyState::Held ||
+                previousMouseKey == KeyState::Pressed)
+            {
+                // Set it to released
+                return KeyState::Released;
+            }
+            // If mouse still wasn't pressed 
+            else
+            {
+                // Set it's state to none because nothing changed
+                return KeyState::None;
+            };
+        };
+    };
+
+
+    /// <summary>
+    /// A window message dispatcher, the only purpose of this function is to dispatch window messages to the instanced WinProc in this class
+    /// </summary>
+    /// <param name="hwnd"></param>
+    /// <param name="msg"></param>
+    /// <param name="wParam"></param>
+    /// <param name="lParam"></param>
+    /// <returns></returns>
+    static LRESULT CALLBACK WinProcDispatch(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+    {
+        // Get Window ptr from bound user data and dispatch window message to the Window's WindowProcedure
+        Window* windowPointer = reinterpret_cast<Window*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+        return windowPointer->WindowProcedure(hwnd, msg, wParam, lParam);
     };
 
 };

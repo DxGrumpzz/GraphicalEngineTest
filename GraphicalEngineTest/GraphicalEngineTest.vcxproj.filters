@@ -7,6 +7,9 @@
     <Filter Include="Graphics">
       <UniqueIdentifier>{84890b0d-c70e-412b-8726-ed8b3c0ccf0c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Input">
+      <UniqueIdentifier>{5874fe89-56ce-4165-b486-e6107bd87f69}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="DefaultPixelShader.hlsl">
@@ -32,5 +35,11 @@
       <Filter>Graphics</Filter>
     </ClInclude>
     <ClInclude Include="Vector2D.hpp" />
+    <ClInclude Include="Mouse.hpp">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyState.hpp">
+      <Filter>Input</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
