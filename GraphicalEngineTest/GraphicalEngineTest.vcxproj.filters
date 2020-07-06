@@ -16,6 +16,9 @@
     <Filter Include="Maths">
       <UniqueIdentifier>{01d3113e-b55f-4bc7-a47f-4ab47b7c7879}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scenes">
+      <UniqueIdentifier>{ffb576c3-392d-4247-8114-7cbf6d6f35fe}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="DefaultPixelShader.hlsl">
@@ -52,6 +55,12 @@
     </ClInclude>
     <ClInclude Include="Maths\VectorTransformer.hpp">
       <Filter>Maths</Filter>
+    </ClInclude>
+    <ClInclude Include="Scenes\IScene.hpp">
+      <Filter>Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="BitmapScene.hpp">
+      <Filter>Scenes</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
