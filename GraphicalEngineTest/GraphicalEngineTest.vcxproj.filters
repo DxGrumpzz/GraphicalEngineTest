@@ -10,6 +10,12 @@
     <Filter Include="Input">
       <UniqueIdentifier>{5874fe89-56ce-4165-b486-e6107bd87f69}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Bitmaps">
+      <UniqueIdentifier>{35be2e9b-3ef5-43df-bcd3-7d270f13d5ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Maths">
+      <UniqueIdentifier>{01d3113e-b55f-4bc7-a47f-4ab47b7c7879}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="DefaultPixelShader.hlsl">
@@ -43,6 +49,9 @@
     </ClInclude>
     <ClInclude Include="Keyboard.hpp">
       <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Maths\VectorTransformer.hpp">
+      <Filter>Maths</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
