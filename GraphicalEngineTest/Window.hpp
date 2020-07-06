@@ -13,12 +13,6 @@ class Window
 
 private:
 
-    /// <summary>
-    /// A boolean flag that indicates if the window messages procedure is bound to the instanced function
-    /// </summary>
-    inline static bool winProcBound = false;
-
-private:
 
     /// <summary>
     /// Handle to the window
@@ -131,34 +125,9 @@ private:
     /// <returns></returns>
     static LRESULT CALLBACK WinProcDispatch(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
-        // If window procedure isn't bound
-        if (winProcBound == false)
-        {
-            // Check if window finished creation
-            if (msg == WM_NCCREATE)
-            {
-                // Get a pointer to the Window
-                const CREATESTRUCTW* windowDataPointer = reinterpret_cast<CREATESTRUCTW*>(lParam);
-                Window* windowPointer = reinterpret_cast<Window*>(windowDataPointer->lpCreateParams);
-
-                // Set GWLP_USERDATA to the window pointer so we can retrieve it later
-                SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(windowPointer));
-
-                winProcBound = true;
-
-                // Dispatch the message to the instanced window procedure
-                return windowPointer->WindowProcedure(hwnd, msg, wParam, lParam);
-            };
-
-            // If any other message is received prior, handle it with DefWindowProc
-            return DefWindowProcW(hwnd, msg, wParam, lParam);
-        }
-        else
-        {
-            // Get Window ptr from bound user data and dispatch window message to the Window's WindowProcedure
-            Window* windowPointer = reinterpret_cast<Window*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
-            return windowPointer->WindowProcedure(hwnd, msg, wParam, lParam);
-        };
+        // Get Window ptr from bound user data and dispatch window message to the Window's WindowProcedure
+        Window* windowPointer = reinterpret_cast<Window*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+        return windowPointer->WindowProcedure(hwnd, msg, wParam, lParam);
     };
 
 
@@ -199,7 +168,8 @@ private:
         windowClass.hInstance = _hInstance;
         windowClass.lpszClassName = _windowClassName.c_str();
 
-        windowClass.lpfnWndProc = WinProcDispatch;
+        // Start with the default window procedure
+        windowClass.lpfnWndProc = DefWindowProcW;
 
         windowClass.hCursor = LoadCursorW(NULL, IDC_ARROW);
         windowClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
@@ -210,11 +180,11 @@ private:
         RECT windowRect;
         windowRect.top = 50;
         windowRect.left = 50;
-        
+
         windowRect.bottom = _windowHeight + windowRect.top;
         windowRect.right = _windowWidth + windowRect.left;
 
-        
+
         DWORD windowStyles = WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU;
 
         // Apparently this function is VERY important if you don't want your draw calls to skip pixel lines(???)
@@ -225,14 +195,20 @@ private:
                                 _windowClassName.c_str(),
                                 _windowTitle.c_str(),
                                 windowStyles,
-                                windowRect.left, windowRect.top, 
+                                windowRect.left, windowRect.top,
                                 // To not skip vertical/horizontal lines when drawing we must specify window width and height 
                                 // based on the differences between right - left and bottom - top
                                 windowRect.right - windowRect.left, windowRect.bottom - windowRect.top,
                                 nullptr,
                                 nullptr,
                                 _hInstance,
-                                this);
+                                nullptr);
+
+        // Set window user data to point to this class instance
+        SetWindowLongPtrW(_hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
+        
+        // Set window procedure to use the dipatching window procedure
+        SetWindowLongPtrW(_hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WinProcDispatch));
     };
 
 };
