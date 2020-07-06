@@ -132,8 +132,17 @@ public:
         return { static_cast<float>(_mouse.X), static_cast<float>(_mouse.Y) };
     };
 
+    int GetWindowWidth() const
+    {
+        return _windowWidth;
+    };
 
-    const Mouse& GetMouse()
+    int GetWindowHeight() const
+    {
+        return _windowHeight;
+    };
+
+    const Mouse& GetMouse() 
     {
         return _mouse;
     };
