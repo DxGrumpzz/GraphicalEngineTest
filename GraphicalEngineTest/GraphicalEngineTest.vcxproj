@@ -170,6 +170,7 @@
   <ItemGroup>
     <ClInclude Include="Colour.hpp" />
     <ClInclude Include="Graphics\Graphics.hpp" />
+    <ClInclude Include="Keyboard.hpp" />
     <ClInclude Include="KeyState.hpp" />
     <ClInclude Include="Mouse.hpp" />
     <ClInclude Include="Vector2D.hpp" />

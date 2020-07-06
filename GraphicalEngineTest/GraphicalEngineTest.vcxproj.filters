@@ -41,5 +41,8 @@
     <ClInclude Include="KeyState.hpp">
       <Filter>Input</Filter>
     </ClInclude>
+    <ClInclude Include="Keyboard.hpp">
+      <Filter>Input</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -2,10 +2,13 @@
 #include <Windows.h>
 #include <windowsx.h>
 #include <string>
+#include <bitset>
 
 #include "Mouse.hpp"
 #include "Vector2D.hpp"
 #include "WindowsUtilities.hpp"
+#include "Keyboard.hpp"
+
 
 /// <summary>
 /// A window class, encapsulates normal Windows window functionality into a single class
@@ -48,6 +51,8 @@ private:
     int _windowHeight;
 
     Mouse _mouse;
+
+    Keyboard  _keyboard;
 
 public:
 
@@ -108,8 +113,9 @@ public:
             DispatchMessageW(&message);
         };
 
-        // Handle mouse key events independently from window events
+        // Handle mouse and keybaord *key* events independently from window events
         HandleMouseEvents();
+        HandleKeyboardEvents();
 
         return true;
     };
@@ -126,9 +132,15 @@ public:
         return { static_cast<float>(_mouse.X), static_cast<float>(_mouse.Y) };
     };
 
+
     const Mouse& GetMouse()
     {
         return _mouse;
+    };
+
+    const Keyboard& GetKeyboard()
+    {
+        return _keyboard;
     };
 
 
@@ -168,11 +180,40 @@ private:
                 return 0;
             };
 
+
             case WM_MOUSELEAVE:
             {
                 _mouse._insideWindow = false;
                 return 0;
             };
+
+
+            // Even though we handle keyboard inputs in HandleKeyboardEvents function 
+            // I'm handling WM_KEYDOWN just for the Text auto repeat
+            case WM_KEYDOWN:
+            {
+                // Check if key is requesting auto repeat, by getting the value of the 30th bit
+                bool isKeyHeld = std::bitset<sizeof(LPARAM) * 8>(lParam).test(30);
+
+                int keycode = static_cast<int>(wParam);
+
+                if (isKeyHeld == true)
+                    _keyboard._keys[keycode].TextAutoRepeat = true;
+
+                return 0;
+            };
+
+
+            case WM_KEYUP:
+            {
+                int keycode = static_cast<int>(wParam);
+
+                _keyboard._keys[keycode].TextAutoRepeat = false;
+                _keyboard._keys[keycode].KeyState = KeyState::Released;
+
+                return 0;
+            };
+
 
             case WM_CLOSE:
             {
@@ -183,6 +224,7 @@ private:
 
         return DefWindowProcW(hwnd, msg, wParam, lParam);
     };
+
 
     /// <summary>
     /// Creates the window handle
@@ -240,15 +282,41 @@ private:
     };
 
 
+    /// <summary>
+    /// Handles user mouse input
+    /// </summary>
     void HandleMouseEvents()
     {
         // Handle mouse clicks only if mouse is in bounds of the console
         if (_mouse.InsideWindow() == true)
         {
-            _mouse.LeftMouseButton = GetNewMouseKeyState(VK_LBUTTON, _mouse.LeftMouseButton);
+            _mouse.LeftMouseButton = GetNewKeyState(VK_LBUTTON, _mouse.LeftMouseButton);
 
-            _mouse.RightMouseButton = GetNewMouseKeyState(VK_RBUTTON, _mouse.RightMouseButton);
+            _mouse.RightMouseButton = GetNewKeyState(VK_RBUTTON, _mouse.RightMouseButton);
         };
+    };
+
+
+    /// <summary>
+    /// Handles user keyboard input 
+    /// </summary>
+    void HandleKeyboardEvents()
+    {
+        // Check if window is in focus
+        bool windowInFocus = GetFocus() == _hwnd;
+
+        // Don't update keys if window isn't currently focused
+        if (windowInFocus == false)
+        {
+            for (int a = 0; a < Keyboard::NUMBER_OF_KEYS; a++)
+                _keyboard._keys[a].KeyState = KeyState::None;
+
+            return;
+        };
+
+        // Update keys 
+        for (int a = 0; a < Keyboard::NUMBER_OF_KEYS; a++)
+            _keyboard._keys[a].KeyState = GetNewKeyState(_keyboard._keys[a].Key, _keyboard._keys[a].KeyState);
 
     };
 
@@ -259,7 +327,7 @@ private:
     /// <param name="mouseKeyCode"> The mouse button key code </param>
     /// <param name="previousMouseKey"> The previous mouse key state </param>
     /// <returns></returns>
-    KeyState GetNewMouseKeyState(int mouseKeyCode, KeyState previousMouseKey)
+    KeyState GetNewKeyState(int mouseKeyCode, KeyState previousMouseKey)
     {
         // Check if mouse button is pressed
         if (GetAsyncKeyState(mouseKeyCode))
