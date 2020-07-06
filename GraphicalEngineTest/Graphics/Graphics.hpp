@@ -154,16 +154,21 @@ public:
         _d3dDeviceContext->Draw(6u, 0u);
 
 
-        WindowsUtilities::COM_CALL(_dxgiSwapChain->Present(1, NULL));
+        // Present the frame
+        WindowsUtilities::COM_CALL(_dxgiSwapChain->Present(
+            // Don't sync frame to any frame interval, run at fastest speed possible
+            2, 
+            // Present a frame from each buffer available
+            0));
     };
 
 
     void DrawPixel(int x, int y, const Colour& pixelColour = { 255, 255, 255, 1 }, bool checkBounds = true)
     {
-        if (x < 0 || x >=_windowWidth)
+        if (x < 0 || x >= _windowWidth)
         {
             if (checkBounds == true)
-                throw std::exception("X is out of bounds");
+               throw std::exception("X is out of bounds");
             else
                 return;
         }
@@ -355,7 +360,6 @@ private:
 
         swapChainDescriptor.OutputWindow = hwnd;
 
-
         // Create D3D device and swap chain
         WindowsUtilities::COM_CALL(D3D11CreateDeviceAndSwapChain(adapter.Get(),
                                    // Setting to unkwon type because we give it an IAdapter
@@ -375,7 +379,6 @@ private:
                                    _d3dDevice.GetAddressOf(),
                                    nullptr,
                                    _d3dDeviceContext.GetAddressOf()));
-
     };
 
     /// <summary>
