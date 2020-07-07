@@ -18,8 +18,7 @@ public:
         X(x),
         Y(y)
     {
-    }
-
+    };
 
 public:
 
@@ -28,7 +27,7 @@ public:
         return sqrtf(LengthSquare());
     };
 
-    int LengthSquare() const
+    float LengthSquare() const
     {
         return (X * X) + (Y * Y);
     };
@@ -89,7 +88,7 @@ public:
 
     void RotateDeg(float degrees)
     {
-        float radians = degrees * 3.14159265 / 180;
+        float radians = degrees * 3.14159265f / 180;
 
         Rotate(radians);
     };
