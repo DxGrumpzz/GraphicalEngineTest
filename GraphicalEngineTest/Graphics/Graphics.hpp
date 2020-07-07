@@ -80,6 +80,7 @@ public:
 
         WindowsUtilities::COM_CALL(_d3dDevice->CreateRenderTargetView(d3dBackBufferResource.Get(), nullptr, _d3dRendererTragetView.GetAddressOf()));
 
+        
         _d3dDeviceContext->OMSetRenderTargets(1, _d3dRendererTragetView.GetAddressOf(), nullptr);
 
         D3D11_VIEWPORT viewport = { 0 };
@@ -182,6 +183,25 @@ public:
 
         Colour& pixel = GetPixel(x, y);
         pixel = pixelColour;
+    };
+
+    
+    /// <summary>
+    /// Get number of pixels 
+    /// </summary>
+    /// <returns></returns>
+    std::size_t GetPixelsCount()
+    {
+        return static_cast<std::size_t>(_windowHeight) * static_cast<std::size_t>(_windowWidth);
+    };
+
+    /// <summary>
+    /// Get a pointer to the beggning of the pixels array
+    /// </summary>
+    /// <returns></returns>
+    Colour* GetPixels()
+    {
+        return _pixelData;
     };
 
 private:
