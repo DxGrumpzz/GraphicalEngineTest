@@ -4,17 +4,39 @@
 #include "Colour.hpp"
 
 
+/// <summary>
+/// A class responsible for drawing sprites on screen
+/// </summary>
 class Sprite
 {
 
 private:
+
+    /// <summary>
+    /// The graphics "engine" used to render the sprite
+    /// </summary>
     Graphics& _graphics;
 
 public:
+
+    /// <summary>
+    /// Width of the sprite
+    /// </summary>
     unsigned int Width = 0;
+
+    /// <summary>
+    /// Sprite height
+    /// </summary>
     unsigned int Height = 0;
 
+    /// <summary>
+    /// The sprite's pixels
+    /// </summary>
     Colour* Pixels = nullptr;
+
+    /// <summary>
+    /// The number of pixels available
+    /// </summary>
     size_t PixelCount = 0;
 
 public:
@@ -27,6 +49,11 @@ public:
 
 public:
 
+    /// <summary>
+    /// Draw the sprite entirely
+    /// </summary>
+    /// <param name="x"> X position to start drawing from </param>
+    /// <param name="y"> Y position to start drawing from </param>
     void DrawSprite(int x, int y) const
     {
         for (size_t spriteX = 0; spriteX < Width; spriteX++)
@@ -42,7 +69,15 @@ public:
         };
     };
 
-
+    /// <summary>
+    /// Draw a segment from the sprite
+    /// </summary>
+    /// <param name="x"> X position to start drawing from </param>
+    /// <param name="y"> Y position to start drawing from </param>
+    /// <param name="xOffset"> The segment's starting offset in X axis </param>
+    /// <param name="yOffset"> The segment's starting offset in Y axis </param>
+    /// <param name="width"> The segment's end offset in X axis </param>
+    /// <param name="height"> The segment's end offset in Y axis </param>
     void DrawSprite(int x, int y, int xOffset, int yOffset, int width, int height) const
     {
 
@@ -62,6 +97,16 @@ public:
     };
 
 
+    /// <summary>
+    /// Draw a segmented sprite with a chroma key 
+    /// </summary>
+    /// <param name="x"> X position to start drawing from </param>
+    /// <param name="y"> Y position to start drawing from </param>
+    /// <param name="xOffset"> The segment's starting offset in X axis </param>
+    /// <param name="yOffset"> The segment's starting offset in Y axis </param>
+    /// <param name="width"> The segment's end offset in X axis </param>
+    /// <param name="height"> The segment's end offset in Y axis </param>
+    /// <param name="chromaColour"> The colour/chroma key to ignore </param>
     void DrawSpriteChromaKey(int x, int y, int xOffset, int yOffset, int width, int height, const Colour& chromaColour) const
     {
 
@@ -103,15 +148,28 @@ public:
 
     };
 
-
-    void DrawSpriteScale(int x, int y, float scale)
+    /// <summary>
+    /// Draw a sprite entirely and scale
+    /// </summary>
+    /// <param name="x"> X position to start drawing from </param>
+    /// <param name="y"> Y position to start drawing from </param>
+    /// <param name="scale"> The scaling factor </param>
+    void DrawSpriteScale(int x, int y, float scale) const
     {
         DrawSpriteScale(x, y, scale, scale);
     };
 
 
-    void DrawSpriteScale(int x, int y, float horizontalScale, float verticalScale)
+    /// <summary>
+    /// Draw a sprite entirely and scale vertically or horizontally
+    /// </summary>
+    /// <param name="x"> X position to start drawing from </param>
+    /// <param name="y"> Y position to start drawing from </param>
+    /// <param name="horizontalScale"> The horizontal scale factor </param>
+    /// <param name="verticalScale"> The horizontal scale factor  </param>
+    void DrawSpriteScale(int x, int y, float horizontalScale, float verticalScale) const
     {
+        // Scaling is hella expensive, don't draw if scale is tool small to be seen 
         if (horizontalScale < .0f ||
             verticalScale < .0f)
             return;
