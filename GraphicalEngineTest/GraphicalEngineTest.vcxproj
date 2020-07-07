@@ -176,6 +176,7 @@
     <ClInclude Include="Maths\VectorTransformer.hpp" />
     <ClInclude Include="Mouse.hpp" />
     <ClInclude Include="Scenes\IScene.hpp" />
+    <ClInclude Include="Sprite.hpp" />
     <ClInclude Include="Vector2D.hpp" />
     <ClInclude Include="Vertex.hpp" />
     <ClInclude Include="Window.hpp" />

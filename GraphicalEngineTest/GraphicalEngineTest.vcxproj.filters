@@ -19,6 +19,9 @@
     <Filter Include="Scenes">
       <UniqueIdentifier>{ffb576c3-392d-4247-8114-7cbf6d6f35fe}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scenes\BitmapScene">
+      <UniqueIdentifier>{2cd1e8c9-578c-4c6d-875e-b23dae4e6b13}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="DefaultPixelShader.hlsl">
@@ -60,7 +63,10 @@
       <Filter>Scenes</Filter>
     </ClInclude>
     <ClInclude Include="BitmapScene.hpp">
-      <Filter>Scenes</Filter>
+      <Filter>Scenes\BitmapScene</Filter>
+    </ClInclude>
+    <ClInclude Include="Sprite.hpp">
+      <Filter>Scenes\BitmapScene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
