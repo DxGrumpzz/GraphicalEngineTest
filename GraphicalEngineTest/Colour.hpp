@@ -12,4 +12,17 @@ struct Colour
     std::uint8_t Blue;
 
     std::uint8_t Alpha;
+
+
+    bool operator == (const Colour& colour)
+    {
+        if ((Red == colour.Red) &&
+            (Green == colour.Green) &&
+            (Blue == colour.Blue) &&
+            (Alpha == colour.Alpha))
+            return true;
+        else
+            return false;
+    };
+
 };
