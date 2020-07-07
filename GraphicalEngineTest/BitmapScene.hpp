@@ -4,113 +4,12 @@
 #include "Window.hpp"
 #include "Graphics.hpp"
 #include "IScene.hpp"
+#include "Sprite.hpp"
+
 
 class BitmapScene : public IScene
 {
 private:
-
-
-    class Sprite
-    {
-
-    private:
-        Graphics& _graphics;
-
-    public:
-        unsigned int Width = 0;
-        unsigned int Height = 0;
-
-        Colour* Pixels = nullptr;
-        size_t PixelCount = 0;
-
-    public:
-
-        Sprite(Graphics& graphics) :
-            _graphics(graphics)
-        {
-        };
-
-
-    public:
-
-        void DrawSprite(int x, int y) const
-        {
-            for (size_t spriteX = 0; spriteX < Width; spriteX++)
-            {
-                for (size_t spriteY = 0; spriteY < Height; spriteY++)
-                {
-                    size_t pixelDataIndexer = spriteX + Width * spriteY;
-
-                    Colour& colour = Pixels[pixelDataIndexer];
-
-                    _graphics.DrawPixel(spriteX + x, spriteY + y, colour, false);
-                };
-            };
-        };
-
-
-        void DrawSprite(int x, int y, int xOffset, int yOffset, int width, int height) const
-        {
-
-            for (size_t spriteX = 0; spriteX < width - xOffset; spriteX++)
-            {
-                for (size_t spriteY = 0; spriteY < height - yOffset; spriteY++)
-                {
-
-                    size_t pixelDataIndexer = (spriteX + xOffset) + Width * (spriteY + yOffset);
-
-                    Colour& colour = Pixels[pixelDataIndexer];
-
-                    _graphics.DrawPixel(spriteX + x, spriteY + y, colour, false);
-                };
-            };
-
-        };
-
-
-        void DrawSpriteChromaKey(int x, int y, int xOffset, int yOffset, int width, int height, const Colour& chromaColour) const
-        {
-
-            for (size_t spriteX = 0; spriteX < width - xOffset; spriteX++)
-            {
-                for (size_t spriteY = 0; spriteY < height - yOffset; spriteY++)
-                {
-                    size_t pixelDataIndexer = (spriteX + xOffset) + Width * (spriteY + yOffset);
-
-                    Colour& colour = Pixels[pixelDataIndexer];
-
-                    if (colour == chromaColour)
-                        continue;
-
-                    _graphics.DrawPixel(spriteX + x, spriteY + y, colour, false);
-                };
-            };
-
-        };
-
-
-        void DrawSpriteColourChromaKey(int x, int y, int xOffset, int yOffset, int width, int height, const Colour& spriteolour, const Colour& chromaColour) const
-        {
-
-            for (size_t spriteX = 0; spriteX < width - xOffset; spriteX++)
-            {
-                for (size_t spriteY = 0; spriteY < height - yOffset; spriteY++)
-                {
-                    size_t pixelDataIndexer = (spriteX + xOffset) + Width * (spriteY + yOffset);
-
-                    Colour& colour = Pixels[pixelDataIndexer];
-
-                    if (colour == chromaColour)
-                        continue;
-
-                    _graphics.DrawPixel(spriteX + x, spriteY + y, spriteolour, false);
-                };
-            };
-
-        };
-
-
-    };
 
 
 private:
@@ -194,7 +93,7 @@ public:
 
         memset(_sprite.Pixels, 0, _sprite.PixelCount * sizeof(Colour));
 
-        
+
         // Read bitmap 
         for (long long y = beginY; y != endY; y += deltaY)
         {
@@ -228,63 +127,16 @@ public:
 
 public:
 
-    void DrawSprite(int x, int y, float scale, const Sprite& sprite)
-    {
-        if (scale < -.0f)
-            return;
-
-        if (scale > 1.0f)
-        {
-            for (double spriteX = 0; spriteX < sprite.Width; spriteX++)
-            {
-                for (double spriteY = 0; spriteY < sprite.Height; spriteY++)
-                {
-
-                    for (size_t scaleX = 0; scaleX < scale; scaleX++)
-                    {
-                        for (size_t scaleY = 0; scaleY < scale; scaleY++)
-                        {
-
-                            size_t pixelDataIndexer = spriteX + sprite.Width * spriteY;
-
-                            Colour& colour = sprite.Pixels[pixelDataIndexer];
-
-                            _graphics.DrawPixel(x + (spriteX * scale) + scaleX, y + (spriteY * scale) + scaleY, colour, false);
-
-                        };
-                    };
-
-                };
-            };
-        }
-        else
-        {
-            for (double spriteX = 0; spriteX < sprite.Width; spriteX++)
-            {
-                for (double spriteY = 0; spriteY < sprite.Height; spriteY++)
-                {
-                    size_t pixelDataIndexer = spriteX + sprite.Width * spriteY;
-
-                    Colour& colour = sprite.Pixels[pixelDataIndexer];
-
-                    _graphics.DrawPixel(x + (spriteX * scale), y + (spriteY * scale), colour, false);
-                };
-            };
-        };
-    };
 
 
-    virtual void UpdateScene(float deltaTime) override
-    {
-
-    };
 
     Vector2D p0 = { 0, 0 };
 
-    float scale = 1.0f;
+    float horizontalScale = 1.0f;
+    float verticalScale = 1.0f;
 
 
-    virtual void DrawScene() override
+    virtual void UpdateScene(float deltaTime) override
     {
         Mouse mouse = _window.GetMouse();
         const Keyboard& keyboard = _window.GetKeyboard();
@@ -297,14 +149,29 @@ public:
 
         if (keyboard.GetKeyState(VK_UP) == KeyState::Held)
         {
-            scale += 0.01F;
+            verticalScale -= 2.0F * deltaTime;
         }
         else if (keyboard.GetKeyState(VK_DOWN) == KeyState::Held)
         {
-            scale -= 0.01F;
+            verticalScale += 2.0F * deltaTime;
+        }
+
+        if (keyboard.GetKeyState(VK_LEFT) == KeyState::Held)
+        {
+            horizontalScale -= 2.0F * deltaTime;
+        }
+        else if (keyboard.GetKeyState(VK_RIGHT) == KeyState::Held)
+        {
+            horizontalScale += 2.0F * deltaTime;
         };
 
-        DrawSprite(p0.X, p0.Y, scale, _sprite);
+    };
+
+
+    virtual void DrawScene() override
+    {
+        //_sprite.DrawSpriteScale(p0.X, p0.Y, horizontalScale, verticalScale);
+         _sprite.DrawSpriteScale(p0.X, p0.Y, verticalScale);
     };
 
 };
