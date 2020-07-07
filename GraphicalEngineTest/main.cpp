@@ -1,9 +1,12 @@
 #include <Windows.h>
 
 #include <cmath>
+#include <vector>
 
 #include "Window.hpp"
 #include "Graphics.hpp"
+#include "IScene.hpp"
+#include "BitmapScene.hpp"
 
 
 
@@ -11,6 +14,7 @@ int windowWidth = 800;
 int windowHeight = 500;
 
 Graphics* graphics = new Graphics(windowWidth, windowHeight);
+Window* window = nullptr;
 
 
 int SignNum(float number)
@@ -31,42 +35,61 @@ void DrawLine(int x0, int y0, int x1, int y1)
     float deltaX = x1 - x0;
     float deltaY = y1 - y0;
 
-    float deltaError = std::fabs(deltaY / deltaX);
 
-    float error = 0.0f;
-    int y = y0;
+std::vector<IScene*> scenes;
+std::vector<IScene*>::iterator currentScene;
 
-    for (int x = x0; x < x1; x++)
+
+
+/// <summary>
+/// Cycle between available scenes
+/// </summary>
+void CycleScences()
     {
-        graphics->DrawPixel(x, y, { 255, 255, 255 }, false);
+    const Keyboard& keyboard = window->GetKeyboard();
 
-        error += deltaError;
-
-        if (error >= 0.5f)
+    // If control is pressed 
+    if (keyboard.GetKeyState(VK_CONTROL) == KeyState::Held)
+    {
+        // And user pressed right key 
+        if (keyboard.GetKeyState(VK_RIGHT) == KeyState::Pressed)
         {
-            y += SignNum(deltaY) * 1;
-            error -= 1.0f;
+            // Cycle to the next scene
+            currentScene++;
+
+            // If it's the last scene
+            if (currentScene == scenes.end())
+            {
+                // Go back to the beginning
+                currentScene = scenes.begin();
+            };
+        };
+
+        // If user pressed the left arrow
+        if (keyboard.GetKeyState(VK_LEFT) == KeyState::Pressed)
+        {
+            // Check if we're at the beginning
+            if (currentScene == scenes.begin())
+        {
+                // Go to the end scene
+                currentScene = scenes.end() - 1;
+            }
+            else
+                // Cycle to previous scene
+                currentScene--;
         };
     };
 };
 
-int x2 = 0;
-int y2 = 0;
 
-void DrawFrame()
-{
-    if (GetAsyncKeyState(VK_LBUTTON))
+
+void DrawFrame(float deltaTime)
     {
-        POINT p = { 0 };
-        GetCursorPos(&p);
-        ScreenToClient(hwnd, &p);
+    CycleScences();
 
-        x2 = p.x;
-        y2 = p.y;
-    };
+    (*currentScene)->UpdateScene(deltaTime);
+    (*currentScene)->DrawScene();
 
-
-    DrawLine(windowWidth /2, windowHeight /2 , x2, y2);
 };
 
 
@@ -79,14 +102,18 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     // Title of this window
     const wchar_t* windowTitle = L"DirectX Window";
 
-    Window* window = new Window(windowWidth, windowHeight,
+
+    window = new Window(windowWidth, windowHeight,
                                 hInstance,
                                 windowClassName,
                                 windowTitle);
-    hwnd = window->GetHWND();
 
     // Setup graphics components
     graphics->SetupGraphics(window->GetHWND());
+
+    scenes.push_back(new BitmapScene(*graphics, *window));
+
+    currentScene = scenes.end() - 1;
 
     // Show the window
     window->ShowWindow();
