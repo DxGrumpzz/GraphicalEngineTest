@@ -128,11 +128,8 @@ public:
         _sprite(graphics)
     {
 
-        //std::wstring bitmapPath = L"Resources\\0001.bmp";
-        // std::wstring bitmapPath = L"Resources\\Fixedsys16x28.bmp";
-        std::wstring bitmapPath = L"Resources\\a32.bmp";
+        std::wstring bitmapPath = L"Resources\\Vikings_smallenemies_004.bmp";
 
-        //std::ifstream file("Resources\\0001.bmp",
         std::ifstream file(bitmapPath,
                            // Read/open the file in binary mode (handles \n\r characters differently, and more)
                            std::ios::binary);
@@ -142,24 +139,26 @@ public:
             throw std::exception("Unable to open file");
         };
 
-
-
+        // Get bitmap header
         BITMAPFILEHEADER bitmapFileHeader = { 0 };
         file.read(reinterpret_cast<char*>(&bitmapFileHeader), sizeof(bitmapFileHeader));
 
+        // Get bitmap info
         BITMAPINFOHEADER bitmapInfo = { 0 };
         file.read(reinterpret_cast<char*>(&bitmapInfo), sizeof(bitmapInfo));
 
 
+        // Bitmap validation, currently only non compressed, 32, and 24 bit, bitmaps are supported
         if (bitmapInfo.biCompression != BI_RGB)
             throw std::exception("Unsupported compression type");
 
         if (bitmapInfo.biBitCount != 32 &&
-            (bitmapInfo.biBitCount != 24) &&
-            (bitmapInfo.biBitCount != 4))
+            (bitmapInfo.biBitCount != 24))
             throw std::exception("Unsupported bit-per-pixel count");
 
 
+        // If height is negative the bitmap is read top to bottom
+        // Otherwise bottom to top (default)
         bool isUpsideDown = bitmapInfo.biHeight < 0;
 
         int beginY = 0;
@@ -167,12 +166,11 @@ public:
 
         int deltaY = 0;
 
-
         if (isUpsideDown == true)
         {
             _sprite.Height = -bitmapInfo.biHeight;
-            beginY = -1;
-            endY = _sprite.Height - 1;
+            beginY = 0;
+            endY = _sprite.Height;
             deltaY = 1;
         }
         else
@@ -184,37 +182,45 @@ public:
         };
 
 
+        // Calculate bitmap row padding (If it's 24-bit bitmap )
         int bytesPerPixel = bitmapInfo.biBitCount / 8;
-
         int padding = (4 - (bitmapInfo.biWidth * bytesPerPixel) % 4) % 4;
 
         _sprite.Width = bitmapInfo.biWidth;
 
+        // Create the sprite pixels 
         _sprite.PixelCount = _sprite.Height * _sprite.Width;
         _sprite.Pixels = new Colour[_sprite.PixelCount];
 
         memset(_sprite.Pixels, 0, _sprite.PixelCount * sizeof(Colour));
 
-
+        
+        // Read bitmap 
         for (long long y = beginY; y != endY; y += deltaY)
         {
             for (std::size_t x = 0; x < bitmapInfo.biWidth; x++)
             {
+                // Find pixel position 
                 std::size_t pixelPosition = x + bitmapInfo.biWidth * y;
+
 
                 Colour pixel = { 0 };
 
-                pixel.Red = file.get();
                 pixel.Blue = file.get();
                 pixel.Green = file.get();
+                pixel.Red = file.get();
 
-
+                // If the bitmap is 32 bit
                 if (bitmapInfo.biBitCount == 32)
+                    // Read alpha
                     pixel.Alpha = file.get();
 
+                // Add pixel to sprite
                 _sprite.Pixels[pixelPosition] = pixel;
             };
 
+            // If the bitmap isn't 32 bit there should usually be row padding,
+            // so move reader-head to next the row
             if (bitmapInfo.biBitCount != 32)
                 file.seekg(padding, std::ios::cur);
         };
