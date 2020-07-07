@@ -157,7 +157,7 @@ public:
         // Present the frame
         WindowsUtilities::COM_CALL(_dxgiSwapChain->Present(
             // Don't sync frame to any frame interval, run at fastest speed possible
-            2, 
+            0, 
             // Present a frame from each buffer available
             0));
     };
