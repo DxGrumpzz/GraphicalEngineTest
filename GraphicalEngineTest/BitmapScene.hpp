@@ -26,7 +26,9 @@ public:
         _window(window),
         _sprite(graphics)
     {
-        std::wstring bitmapPath = L"Resources\\Vikings_smallenemies_004.bmp";
+        //std::wstring bitmapPath = L"Resources\\Vikings_smallenemies_004.bmp";
+        std::wstring bitmapPath = L"Resources\\0001.bmp";
+        
         _sprite.LoadFromFile(bitmapPath);
 
     };
@@ -35,7 +37,7 @@ public:
 
 
     Vector2D p0 = { 0, 0 };
-    Colour p0Colour = { 255, 0, 255, 0 };
+    Colour p0Colour = { 255, 0, 255, 255 };
 
     float alpha = .2f;
 
@@ -104,6 +106,39 @@ public:
     };
 
 
+    void DrawSpriteTransparent(int x, int y, const Sprite& _sprite, float alpha)
+    {
+        std::size_t windowWidth = _window.GetWindowWidth();
+        Colour* screenPixels = _graphics.GetPixels();
+
+        // Simple boundry check 
+        if (alpha < 0.f)
+            alpha = 0.0001f;
+        else if (alpha > 1.f)
+            alpha = 1.0f;
+
+        for (size_t spriteX = 0; spriteX < _sprite.Width; spriteX++)
+        {
+            for (size_t spriteY = 0; spriteY < _sprite.Height; spriteY++)
+            {
+                size_t spritePixelIndex = spriteX + _sprite.Width * spriteY;
+                std::size_t screenPixelIndex = (spriteX + x) + windowWidth * (spriteY + y);
+
+                Colour& spritePixel = _sprite.Pixels[spritePixelIndex];
+                const Colour& screenPixel = screenPixels[screenPixelIndex];
+
+                Colour blend = { 0 };
+
+                blend.Red =   spritePixel.Red * alpha +   screenPixel.Red * alpha * (1 - alpha) / alpha + alpha * (1 - alpha);
+                blend.Green = spritePixel.Green * alpha + screenPixel.Green * alpha * (1 - alpha) / alpha + alpha * (1 - alpha);
+                blend.Blue =  spritePixel.Blue * alpha +  screenPixel.Blue * alpha * (1 - alpha) / alpha + alpha * (1 - alpha);
+
+                _graphics.DrawPixel(spriteX + x, spriteY + y, blend, false);
+            };
+        };
+    };
+
+
     virtual void UpdateScene(float deltaTime) override
     {
         Mouse mouse = _window.GetMouse();
@@ -162,8 +197,8 @@ public:
             };
         };
 
-
-        DrawPTransparent(p0, p0Colour);
+         //_sprite.DrawSprite(p0.X, p0.Y);
+        DrawSpriteTransparent(p0.X, p0.Y, _sprite, alpha);
     };
 
 };
