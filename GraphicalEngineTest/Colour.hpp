@@ -14,6 +14,20 @@ struct Colour
     std::uint8_t Alpha;
 
 
+public:
+
+    bool CompareNonAlpha(const Colour& colour)
+    {
+        if ((Red == colour.Red) &&
+            (Green == colour.Green) &&
+            (Blue == colour.Blue))
+            return true;
+        else
+            return false;
+    };
+
+public:
+
     bool operator == (const Colour& colour)
     {
         if ((Red == colour.Red) &&
@@ -24,5 +38,6 @@ struct Colour
         else
             return false;
     };
+
 
 };
