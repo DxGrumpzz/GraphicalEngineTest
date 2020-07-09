@@ -204,6 +204,20 @@ public:
         return _pixelData;
     };
 
+    /// <summary>
+    /// Get a pixel based on x and y position
+    /// </summary>
+    /// <returns></returns>
+    Colour& GetPixel(int x, int y)
+    {
+        size_t pixelDataIndexer = x + _windowWidth * y;
+
+        Colour& pixel = _pixelData[pixelDataIndexer];
+
+        return pixel;
+    };
+
+
 private:
 
     void CreateD3D2DTexture(D3D11_TEXTURE2D_DESC& d3d2DTextureDescriptor)
@@ -399,17 +413,6 @@ private:
                                    _d3dDevice.GetAddressOf(),
                                    nullptr,
                                    _d3dDeviceContext.GetAddressOf()));
-    };
-
-    /// <summary>
-    /// Get a pixel as a reference
-    /// </summary>
-    /// <param name="x"> Pixel's X position </param>
-    /// <param name="y"> Pixel's Y position </param>
-    /// <returns></returns>
-    Colour& GetPixel(int x, int y)
-    {
-        return _pixelData[x + _windowWidth * y];
     };
 
 };
