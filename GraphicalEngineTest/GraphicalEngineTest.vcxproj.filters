@@ -22,6 +22,12 @@
     <Filter Include="Scenes\BitmapScene">
       <UniqueIdentifier>{2cd1e8c9-578c-4c6d-875e-b23dae4e6b13}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Bitmaps\Sprites">
+      <UniqueIdentifier>{11d4268f-8c60-45a0-b33b-9b53a087318d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Bitmaps\Sprites\Sprite Effects">
+      <UniqueIdentifier>{e633eb5a-b4a8-4dae-b795-b069aa9f3ca1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="DefaultPixelShader.hlsl">
@@ -66,7 +72,16 @@
       <Filter>Scenes\BitmapScene</Filter>
     </ClInclude>
     <ClInclude Include="Sprite.hpp">
-      <Filter>Scenes\BitmapScene</Filter>
+      <Filter>Bitmaps\Sprites</Filter>
+    </ClInclude>
+    <ClInclude Include="ISpriteEffect.hpp">
+      <Filter>Bitmaps\Sprites\Sprite Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteTransparencyEffect.hpp">
+      <Filter>Bitmaps\Sprites\Sprite Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteChromaKeyEffect.hpp">
+      <Filter>Bitmaps\Sprites\Sprite Effects</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
