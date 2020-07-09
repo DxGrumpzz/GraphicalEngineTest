@@ -153,6 +153,7 @@ public:
         };
     };
 
+
     /// <summary>
     /// Draw the sprite entirely
     /// </summary>
@@ -172,6 +173,7 @@ public:
             };
         };
     };
+
 
     /// <summary>
     /// Draw a segment from the sprite
@@ -252,6 +254,7 @@ public:
 
     };
 
+
     /// <summary>
     /// Draw a sprite entirely and scale
     /// </summary>
@@ -319,4 +322,16 @@ public:
             };
         };
     };
+    
+public:
+
+    Colour& GetPixel(int x, int y) const
+    {
+        size_t pixelDataIndexer = x + Width * y;
+
+        Colour& pixel = Pixels[pixelDataIndexer];
+
+        return pixel;
+    };
+
 };
