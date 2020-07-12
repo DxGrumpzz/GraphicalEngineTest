@@ -17,24 +17,6 @@ Graphics* graphics = new Graphics(windowWidth, windowHeight);
 Window* window = nullptr;
 
 
-int SignNum(float number)
-{
-    if (number > 0)
-        return 1;
-
-    if (number < 0)
-        return -1;
-
-    return 0;
-};
-
-HWND hwnd;
-
-void DrawLine(int x0, int y0, int x1, int y1)
-{
-    float deltaX = x1 - x0;
-    float deltaY = y1 - y0;
-
 
 std::vector<IScene*> scenes;
 std::vector<IScene*>::iterator currentScene;
