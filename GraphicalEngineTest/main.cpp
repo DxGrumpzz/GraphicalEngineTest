@@ -1,6 +1,7 @@
 #include <Windows.h>
 
 #include <cmath>
+#include <chrono>
 #include <vector>
 
 #include "Window.hpp"
@@ -119,16 +120,47 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     window->ShowWindow();
 
 
+    std::chrono::steady_clock::time_point start;
+    std::chrono::steady_clock::time_point end;
+
+    std::chrono::duration<float > elapsed;
+
+    float secondsAccumulator = 0.0f;
+
+
+    int framesElapsed = 0;
+
     while (window->ProcessMessageBuffer())
     {
+        elapsed = end - start;
+
+        start = std::chrono::steady_clock::now();
+
         // Clear the frame before drawing again
         graphics->ClearFrame();
 
+        secondsAccumulator += elapsed.count();
+
+
+        if (secondsAccumulator > 0.5f)
+        {
+            float fps = framesElapsed / secondsAccumulator;
+
+            SetWindowTextW(window->GetHWND(), std::to_wstring(fps).c_str());
+
+            framesElapsed = 0;
+            secondsAccumulator = 0;
+        };
+
+
         // Draw frame function, should be only responsible for drawing, and simple branching logic
-        DrawFrame();
+        DrawFrame(elapsed.count());
 
         // Draw frame onto the screen and prepare for next frame
         graphics->EndFrame();
+
+        framesElapsed++;
+        end = std::chrono::steady_clock::now();
     };
 
 
