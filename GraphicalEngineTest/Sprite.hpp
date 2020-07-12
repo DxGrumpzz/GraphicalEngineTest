@@ -3,6 +3,7 @@
 
 #include "Graphics.hpp"
 #include "Colour.hpp"
+#include "ISpriteEffect.hpp"
 
 
 /// <summary>
@@ -49,6 +50,7 @@ public:
 
 
 public:
+
 
     /// <summary>
     /// Load a sprite from a file.
@@ -154,25 +156,34 @@ public:
     };
 
 
+
     /// <summary>
     /// Draw the sprite entirely
     /// </summary>
     /// <param name="x"> X position to start drawing from </param>
     /// <param name="y"> Y position to start drawing from </param>
-    void DrawSprite(int x, int y) const
+    /// <param name="effects"> effect(s) to apply to the sprite draw call </param>
+    void DrawSprite(int x, int y, std::vector<ISpriteEffect*> effects = { })
     {
+        // Iterate through the entirety of the sprite's pixels
         for (size_t spriteX = 0; spriteX < Width; spriteX++)
         {
             for (size_t spriteY = 0; spriteY < Height; spriteY++)
             {
-                size_t pixelDataIndexer = spriteX + Width * spriteY;
+                Colour spritePixel = GetPixel(spriteX, spriteY);
 
-                Colour& colour = Pixels[pixelDataIndexer];
+                // Apply effects
+                ApplyEffects(spriteX + x, spriteY + y,
+                             spriteX, spriteY,
+                             spritePixel,
+                             effects);
 
-                _graphics.DrawPixel(spriteX + x, spriteY + y, colour, false);
+                // Draw the pixel
+                _graphics.DrawPixel(spriteX + x, spriteY + y, spritePixel, false);
             };
         };
     };
+
 
 
     /// <summary>
@@ -180,91 +191,36 @@ public:
     /// </summary>
     /// <param name="x"> X position to start drawing from </param>
     /// <param name="y"> Y position to start drawing from </param>
-    /// <param name="xOffset"> The segment's starting offset in X axis </param>
-    /// <param name="yOffset"> The segment's starting offset in Y axis </param>
-    /// <param name="width"> The segment's end offset in X axis </param>
-    /// <param name="height"> The segment's end offset in Y axis </param>
-    void DrawSprite(int x, int y, int xOffset, int yOffset, int width, int height) const
+    /// <param name="x0"> The segment's starting offset in X axis </param>
+    /// <param name="y0"> The segment's starting offset in Y axis </param>
+    /// <param name="x1"> The segment's end offset in X axis </param>
+    /// <param name="y1"> The segment's end offset in Y axis </param>
+    /// <param name="effects"> effect(s) to apply to the sprite draw call </param>
+    void DrawSprite(int x, int y,
+                    int x0, int y0,
+                    int x1, int y1,
+                    const std::vector<ISpriteEffect*>& effects = {})
     {
 
-        for (size_t spriteX = 0; spriteX < width - xOffset; spriteX++)
+        // Iterate throught the sprite's pixels based on x0, y0, x1, y1 offsets
+        for (size_t spriteX = 0; spriteX < x1 - x0; spriteX++)
         {
-            for (size_t spriteY = 0; spriteY < height - yOffset; spriteY++)
+            for (size_t spriteY = 0; spriteY < y1 - y0; spriteY++)
             {
+                // Get a copy of the pixel offsetted by beggining offsets
+                Colour spritePixel = GetPixel((spriteX + x0), (spriteY + y0));
 
-                size_t pixelDataIndexer = (spriteX + xOffset) + Width * (spriteY + yOffset);
+                ApplyEffects(spriteX + x, spriteY + y,
+                             (spriteX + x0), (spriteY + y0),
+                             spritePixel,
+                             effects);
 
-                Colour& colour = Pixels[pixelDataIndexer];
-
-                _graphics.DrawPixel(spriteX + x, spriteY + y, colour, false);
+                _graphics.DrawPixel(spriteX + x, spriteY + y, spritePixel, false);
             };
         };
-
     };
 
 
-    /// <summary>
-    /// Draw a segmented sprite with a chroma key 
-    /// </summary>
-    /// <param name="x"> X position to start drawing from </param>
-    /// <param name="y"> Y position to start drawing from </param>
-    /// <param name="xOffset"> The segment's starting offset in X axis </param>
-    /// <param name="yOffset"> The segment's starting offset in Y axis </param>
-    /// <param name="width"> The segment's end offset in X axis </param>
-    /// <param name="height"> The segment's end offset in Y axis </param>
-    /// <param name="chromaColour"> The colour/chroma key to ignore </param>
-    void DrawSpriteChromaKey(int x, int y, int xOffset, int yOffset, int width, int height, const Colour& chromaColour) const
-    {
-
-        for (size_t spriteX = 0; spriteX < width - xOffset; spriteX++)
-        {
-            for (size_t spriteY = 0; spriteY < height - yOffset; spriteY++)
-            {
-                size_t pixelDataIndexer = (spriteX + xOffset) + Width * (spriteY + yOffset);
-
-                Colour& colour = Pixels[pixelDataIndexer];
-
-                if (colour == chromaColour)
-                    continue;
-
-                _graphics.DrawPixel(spriteX + x, spriteY + y, colour, false);
-            };
-        };
-
-    };
-
-
-    void DrawSpriteColourChromaKey(int x, int y, int xOffset, int yOffset, int width, int height, const Colour& spriteolour, const Colour& chromaColour) const
-    {
-
-        for (size_t spriteX = 0; spriteX < width - xOffset; spriteX++)
-        {
-            for (size_t spriteY = 0; spriteY < height - yOffset; spriteY++)
-            {
-                size_t pixelDataIndexer = (spriteX + xOffset) + Width * (spriteY + yOffset);
-
-                Colour& colour = Pixels[pixelDataIndexer];
-
-                if (colour == chromaColour)
-                    continue;
-
-                _graphics.DrawPixel(spriteX + x, spriteY + y, spriteolour, false);
-            };
-        };
-
-    };
-
-
-    /// <summary>
-    /// Draw a sprite entirely and scale
-    /// </summary>
-    /// <param name="x"> X position to start drawing from </param>
-    /// <param name="y"> Y position to start drawing from </param>
-    /// <param name="scale"> The scaling factor </param>
-    void DrawSpriteScale(int x, int y, float scale) const
-    {
-        DrawSpriteScale(x, y, scale, scale);
-    };
 
 
     /// <summary>
@@ -274,33 +230,45 @@ public:
     /// <param name="y"> Y position to start drawing from </param>
     /// <param name="horizontalScale"> The horizontal scale factor </param>
     /// <param name="verticalScale"> The horizontal scale factor  </param>
-    void DrawSpriteScale(int x, int y, float horizontalScale, float verticalScale) const
+    void DrawSprite(int x, int y,
+                    int x0, int y0,
+                    int x1, int y1,
+                    float horizontalScale,
+                    float verticalScale,
+                    const std::vector<ISpriteEffect*>& effects = { })
     {
         // Scaling is hella expensive, don't draw if scale is tool small to be seen 
-        if (horizontalScale < .0f ||
-            verticalScale < .0f)
+        if (horizontalScale < 0.f ||
+            verticalScale < 0.f)
             return;
 
-
+        // If either the horizontal or vertical scalars are greater than 1. percent ...
         if (horizontalScale > 1.f ||
             verticalScale > 1.f)
         {
-            for (double spriteX = 0; spriteX < Width; spriteX++)
+            // Iterate through the sprite segment
+            for (double spriteX = 0; spriteX < x1 - x0; spriteX++)
             {
-                for (double spriteY = 0; spriteY < Height; spriteY++)
+                for (double spriteY = 0; spriteY < y1 - y0; spriteY++)
                 {
 
-                    for (size_t scaleX = 0; scaleX < horizontalScale; scaleX++)
+                    // To accomodate loss in number of pixels drawn, iterate through the scalars and draw "skipped" pixels
+                    for (double scaleX = 0; scaleX < horizontalScale; scaleX++)
                     {
-                        for (size_t scaleY = 0; scaleY < verticalScale; scaleY++)
+                        for (double scaleY = 0; scaleY < verticalScale; scaleY++)
                         {
+                            Colour spritePixel = GetPixel((spriteX + x0), (spriteY + y0));
 
-                            size_t pixelDataIndexer = spriteX + Width * spriteY;
 
-                            Colour& colour = Pixels[pixelDataIndexer];
+                            ApplyEffects(x + (spriteX * horizontalScale) + scaleX,
+                                         y + (spriteY * verticalScale) + scaleY,
+                                         (spriteX + x0),
+                                         (spriteY + y0),
+                                         spritePixel,
+                                         effects);
 
-                            _graphics.DrawPixel(x + (spriteX * horizontalScale) + scaleX, y + (spriteY * verticalScale) + scaleY, colour, false);
 
+                            _graphics.DrawPixel(x + (spriteX * horizontalScale) + scaleX, y + (spriteY * verticalScale) + scaleY, spritePixel, false);
                         };
                     };
 
@@ -309,20 +277,38 @@ public:
         }
         else
         {
-            for (double spriteX = 0; spriteX < Width; spriteX++)
+            for (double spriteX = 0; spriteX < (x1 - x0) - (horizontalScale + 1); spriteX++)
             {
-                for (double spriteY = 0; spriteY < Height; spriteY++)
+                for (double spriteY = 0; spriteY < (y1 - y0) - (verticalScale + 1); spriteY++)
                 {
-                    size_t pixelDataIndexer = spriteX + Width * spriteY;
+                    Colour spritePixel = GetPixel((spriteX + x0), (spriteY + y0));
 
-                    Colour& colour = Pixels[pixelDataIndexer];
 
-                    _graphics.DrawPixel(x + (spriteX * horizontalScale), y + (spriteY * verticalScale), colour, false);
+                    ApplyEffects(x + (spriteX * horizontalScale), y + (spriteY * verticalScale),
+                                 (spriteX + x0), (spriteY + y0),
+                                 spritePixel,
+                                 effects);
+
+
+                    _graphics.DrawPixel(x + (spriteX * horizontalScale), y + (spriteY * verticalScale), spritePixel, false);
                 };
             };
         };
     };
-    
+
+
+
+    void DrawSprite(int x, int y,
+                    int xOffset, int yOffset,
+                    int width, int height,
+                    float scale,
+                    const std::vector<ISpriteEffect*>& effects = { })
+    {
+        DrawSprite(x, y, xOffset, yOffset, width, height, scale, scale, effects);
+    };
+
+
+
 public:
 
     Colour& GetPixel(int x, int y) const
@@ -332,6 +318,36 @@ public:
         Colour& pixel = Pixels[pixelDataIndexer];
 
         return pixel;
+    };
+
+
+private:
+
+    /// <summary>
+    /// Takes a list of effects and applys them to a pixel, Order matters
+    /// </summary>
+    /// <param name="screenX"> Position of the sprite's pixel in the X axis relative to screen </param>
+    /// <param name="screenY"> Position of the sprite's pixel in the Y axis relative to screen </param>
+    /// <param name="spriteX"> Position of the sprite's pixel in the X axis</param>
+    /// <param name="spriteY"> Position of the sprite's pixel in the Y axis</param>
+    /// <param name="spritePixel"> The pixel to affect </param>
+    /// <param name="effects"> The list of effects </param>
+    void ApplyEffects(int screenX, int screenY,
+                      int spriteX, int spriteY,
+                      Colour& spritePixel,
+                      const std::vector<ISpriteEffect*>& effects)
+    {
+        // Check if effects available
+        if (effects.size() != 0)
+        {
+            // Apply desired effects
+            for (ISpriteEffect* effect : effects)
+            {
+                effect->ApplyEffect(screenX, screenY,
+                                    spriteX, spriteY,
+                                    spritePixel);
+            };
+        };
     };
 
 };
