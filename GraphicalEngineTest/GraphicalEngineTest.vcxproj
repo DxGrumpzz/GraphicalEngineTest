@@ -171,6 +171,7 @@
     <ClInclude Include="BitmapScene.hpp" />
     <ClInclude Include="Colour.hpp" />
     <ClInclude Include="Graphics\Graphics.hpp" />
+    <ClInclude Include="GraphScene.hpp" />
     <ClInclude Include="ISpriteEffect.hpp" />
     <ClInclude Include="Keyboard.hpp" />
     <ClInclude Include="KeyState.hpp" />

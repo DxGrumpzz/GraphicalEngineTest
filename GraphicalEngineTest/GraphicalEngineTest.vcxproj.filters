@@ -28,6 +28,9 @@
     <Filter Include="Bitmaps\Sprites\Sprite Effects">
       <UniqueIdentifier>{e633eb5a-b4a8-4dae-b795-b069aa9f3ca1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scenes\Graph Scene">
+      <UniqueIdentifier>{dcd6d5ce-1702-474c-a750-0d0e678f9385}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="DefaultPixelShader.hlsl">
@@ -82,6 +85,9 @@
     </ClInclude>
     <ClInclude Include="SpriteChromaKeyEffect.hpp">
       <Filter>Bitmaps\Sprites\Sprite Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphScene.hpp">
+      <Filter>Scenes\Graph Scene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

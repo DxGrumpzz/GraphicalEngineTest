@@ -6,8 +6,11 @@
 
 #include "Window.hpp"
 #include "Graphics.hpp"
+
 #include "IScene.hpp"
+
 #include "BitmapScene.hpp"
+#include "GraphScene.hpp"
 
 
 
@@ -95,7 +98,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     graphics->SetupGraphics(window->GetHWND());
 
     scenes.push_back(new BitmapScene(*graphics, *window));
-
+    scenes.push_back(new GraphScene(*graphics, *window));
+    
     currentScene = scenes.end() - 1;
 
     // Show the window
