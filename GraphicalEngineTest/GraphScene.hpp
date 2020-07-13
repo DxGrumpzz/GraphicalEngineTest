@@ -78,6 +78,105 @@ public:
     };
 
 
+    void DrawString(int x, int y,
+                    const std::string& text,
+                    float horizontalScale, float verticalScale)
+    {
+
+        if (horizontalScale > 1.f ||
+            verticalScale > 1.f)
+        {
+            int startingX = x;
+            int characterCounter = 0;
+
+            for (size_t a = 0; a < text.size(); a++)
+            {
+                char currentChar = text[a];
+
+                if (currentChar == '\n')
+                {
+                    x = startingX;
+                    y += (_glyphHeight * verticalScale);
+
+                    characterCounter = 0;
+                    continue;
+                };
+
+                Vector2D characterPos = GetCharacterPos(currentChar);
+
+
+                float x0 = _glyphWidth * characterPos.X;
+                float y0 = _glyphHeight * characterPos.Y;
+
+                float x1 = (_glyphWidth * characterPos.X) + _glyphWidth;
+                float y1 = (_glyphHeight * characterPos.Y) + _glyphHeight;
+
+
+                for (double spriteX = 0; spriteX < x1 - x0; spriteX++)
+                {
+                    for (double spriteY = 0; spriteY < y1 - y0; spriteY++)
+                    {
+                        
+                        // To accomodate loss in number of pixels drawn, iterate through the scalars and draw "skipped" pixels
+                        for (double scaleX = 0; scaleX < horizontalScale; scaleX++)
+                        {
+                            for (double scaleY = 0; scaleY < verticalScale; scaleY++)
+                            {
+                                Colour spritePixel = _sprite.GetPixel(spriteX + x0, spriteY + y0);
+
+                                _graphics.DrawPixel((x + (spriteX * horizontalScale) + scaleX) + (characterCounter * _glyphWidth) * horizontalScale, y + (spriteY * verticalScale) + scaleY, spritePixel, false);
+                            };
+                        };
+
+                    };
+                };
+
+                characterCounter++;
+            };
+        }
+        else
+        {
+            int startingX = x;
+            int characterCounter = 0;
+
+            for (size_t a = 0; a < text.size(); a++)
+            {
+                char currentChar = text[a];
+
+                if (currentChar == '\n')
+                {
+                    x = startingX;
+                    y += (_glyphHeight * verticalScale);
+
+                    characterCounter = 0;
+                    continue;
+                };
+
+                Vector2D characterPos = GetCharacterPos(currentChar);
+
+                float x0 = _glyphWidth * characterPos.X;
+                float y0 = _glyphHeight * characterPos.Y;
+
+                float x1 = (_glyphWidth * characterPos.X) + _glyphWidth;
+                float y1 = (_glyphHeight * characterPos.Y) + _glyphHeight;
+
+
+                for (double spriteX = 0; spriteX < (x1 - x0); spriteX++)
+                {
+                    for (double spriteY = 0; spriteY < (y1 - y0); spriteY++)
+                    {
+                        Colour spritePixel = _sprite.GetPixel((spriteX + x0), (spriteY + y0));
+
+                        _graphics.DrawPixel(x + (spriteX * horizontalScale) + (characterCounter * _glyphWidth) * horizontalScale, y + (spriteY * verticalScale), spritePixel, false);
+                    };
+                };
+
+                characterCounter++;
+            };
+
+        };
+    };
+
     void DrawChar(int x, int y, char character)
     {
         Vector2D characterPos = GetCharacterPos(character);
@@ -183,8 +282,10 @@ public:
     virtual void DrawScene() override
     {
         _font.DrawString(_charPos.X,
-                       _charPos.Y,
-                       "asdf\nfdsa4\n12651");
+                         _charPos.Y,
+                         "asdf\nfdsa4\n12651",
+                         _horizontalScale,
+                         _verticalScale);
 
         //_font.DrawString(_charPos.X, _charPos.Y, "0\n12\n3\n456\n78\n9");
     };
