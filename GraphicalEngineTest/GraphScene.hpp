@@ -8,7 +8,7 @@
 #include "Sprite.hpp"
 #include "Window.hpp"
 #include "FontSheet.hpp"
-
+#include "VectorTransformer.hpp"
 
 
 class GraphScene : public IScene
@@ -77,20 +77,25 @@ public:
 
     };
 
+    Vector2D mouseVector = { 5, 5 };
 
     virtual void DrawScene() override
     {
-        _font.DrawString(_charPos.X,
-                         _charPos.Y,
-                         "asdf\nfdsa4\n12651",
-                         _horizontalScale,
-                         _verticalScale);
+        const Mouse& mouse = _window.GetMouse();
+
+        VectorTransformer transformer(_window);
+
+        if (mouse.LeftMouseButton == KeyState::Held)
+            mouseVector = transformer.MouseToVector(mouse);
+
+
+        DrawLine(transformer.CartesianToScreenSpace(1, 0), mouseVector);
 
         //_font.DrawString(_charPos.X, _charPos.Y, "0\n12\n3\n456\n78\n9");
     };
 
 
-public:
+private:
 
     void DrawGraph()
     {
@@ -98,4 +103,45 @@ public:
 
     };
 
+
+    void DrawLine(const Vector2D p0, const Vector2D p1)
+    {
+        if (p0.X > p1.X)
+        {
+            float run = p0.X - p1.X;
+            float rise = p0.Y - p1.Y;
+
+            float slope = rise / run;
+
+            float yIntercept = p0.Y - slope * p0.X;
+
+            float y = 0;
+
+            for (float x = p1.X; x < p0.X; x++)
+            {
+                y = slope * x + yIntercept;
+
+                _graphics.DrawPixel(x, y, { 255,255,255 }, false);
+            };
+        }
+        else
+        {
+            float run = p1.X - p0.X;
+            float rise = p1.Y - p0.Y;
+
+            float slope = rise / run;
+
+            float yIntercept = p0.Y - slope * p0.X;
+
+            float y = 0;
+
+            for (float x = p0.X; x < p1.X; x++)
+            {
+                y = slope * x + yIntercept;
+
+                _graphics.DrawPixel(x, y, { 255,255,255 }, false);
+            };
+        };
+
+    };
 };
