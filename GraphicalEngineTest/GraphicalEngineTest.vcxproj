@@ -170,6 +170,7 @@
   <ItemGroup>
     <ClInclude Include="BitmapScene.hpp" />
     <ClInclude Include="Colour.hpp" />
+    <ClInclude Include="FontSheet.hpp" />
     <ClInclude Include="Graphics\Graphics.hpp" />
     <ClInclude Include="GraphScene.hpp" />
     <ClInclude Include="ISpriteEffect.hpp" />

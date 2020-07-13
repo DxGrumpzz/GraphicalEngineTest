@@ -89,5 +89,8 @@
     <ClInclude Include="GraphScene.hpp">
       <Filter>Scenes\Graph Scene</Filter>
     </ClInclude>
+    <ClInclude Include="FontSheet.hpp">
+      <Filter>Bitmaps</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
