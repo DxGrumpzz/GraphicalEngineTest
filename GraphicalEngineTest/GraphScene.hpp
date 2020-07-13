@@ -81,6 +81,8 @@ public:
 
     virtual void DrawScene() override
     {
+        //DrawGraph();
+
         const Mouse& mouse = _window.GetMouse();
 
         VectorTransformer transformer(_window);
@@ -89,7 +91,8 @@ public:
             mouseVector = transformer.MouseToVector(mouse);
 
 
-        DrawLine(transformer.CartesianToScreenSpace(1, 0), mouseVector);
+        // DrawLine(transformer.CartesianToScreenSpace(2, 0), transformer.CartesianToScreenSpace(6, 10));
+        DrawLine(transformer.CartesianToScreenSpace(2, 0), mouseVector);
 
         //_font.DrawString(_charPos.X, _charPos.Y, "0\n12\n3\n456\n78\n9");
     };
@@ -99,49 +102,113 @@ private:
 
     void DrawGraph()
     {
+        for (int x = 0; x < _window.GetWindowWidth(); x++)
+        {
+            _graphics.DrawPixel(x, _window.GetWindowHeight() / 2);
+        };
 
+        for (int y = 0; y < _window.GetWindowHeight(); y++)
+        {
+            _graphics.DrawPixel(_window.GetWindowWidth() / 2, y);
+        };
 
     };
 
-
-    void DrawLine(const Vector2D p0, const Vector2D p1)
+    /// <summary>
+    /// Draw a line segment between 2 points
+    /// </summary>
+    /// <param name="p0"></param>
+    /// <param name="p1"></param>
+    /// <param name="colour"></param>
+    void DrawLine(Vector2D p0, Vector2D p1, Colour colour = { 255,255,255 })
     {
-        if (p0.X > p1.X)
+        // Left "leaning" line
+        if (p0.X >= p1.X)
         {
             float run = p0.X - p1.X;
             float rise = p0.Y - p1.Y;
 
-            float slope = rise / run;
-
-            float yIntercept = p0.Y - slope * p0.X;
-
-            float y = 0;
-
-            for (float x = p1.X; x < p0.X; x++)
+            // If the rise starts getting larger than the run the line starts to break up, 
+            // so we check when that happens and use "inverses" to draw the new line
+            // Instead of y-Intercept we use x-Intercept, and replace x's with y's positions
+            if (std::abs(rise) > std::abs(run))
             {
-                y = slope * x + yIntercept;
+                float slope = run / rise;
 
-                _graphics.DrawPixel(x, y, { 255,255,255 }, false);
+                float xIntercept = p0.X - slope * p0.Y;
+
+                if (p0.Y > p1.Y)
+                    std::swap(p0, p1);
+                
+                float x = 0;
+
+                for (float y = p0.Y; y < p1.Y; y++)
+                {
+                    x = slope * y + xIntercept;
+
+                    _graphics.DrawPixel(x, y, colour, false);
+                };
+            }
+            else
+            {
+                float slope = rise / run;
+
+                float yIntercept = p0.Y - slope * p0.X;
+
+                float y = 0;
+
+                for (float x = p1.X; x < p0.X; x++)
+                {
+                    y = slope * x + yIntercept;
+
+                    _graphics.DrawPixel(x, y, colour, false);
+                };
             };
         }
+        // Right "leaning" line
         else
         {
             float run = p1.X - p0.X;
             float rise = p1.Y - p0.Y;
 
-            float slope = rise / run;
-
-            float yIntercept = p0.Y - slope * p0.X;
-
-            float y = 0;
-
-            for (float x = p0.X; x < p1.X; x++)
+            // If the rise starts getting larger than the run the line starts to break up, 
+            // so we check when that happens and use "inverses" to draw the new line
+            // Instead of y-Intercept we use x-Intercept, and replace x's with y's positions
+            if (std::abs(rise) > std::abs(run))
             {
-                y = slope * x + yIntercept;
+                float slope = run / rise;
 
-                _graphics.DrawPixel(x, y, { 255,255,255 }, false);
+                float xIntercept = p0.X - slope * p0.Y;
+
+                if (p0.Y > p1.Y)
+                    std::swap(p0, p1);
+
+                float x = 0;
+
+                for (float y = p0.Y; y < p1.Y; y++)
+                {
+                    x = slope * y + xIntercept;
+
+                    _graphics.DrawPixel(x, y, colour, false);
+                };
+            }
+            else
+            {
+                float slope = rise / run;
+
+                float yIntercept = p0.Y - slope * p0.X;
+
+                float y = 0;
+
+                for (float x = p0.X; x < p1.X; x++)
+                {
+                    y = slope * x + yIntercept;
+
+                    _graphics.DrawPixel(x, y, colour, false);
+                };
             };
         };
 
     };
+
 };
