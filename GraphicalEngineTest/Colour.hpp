@@ -41,3 +41,20 @@ public:
 
 
 };
+
+namespace Colours
+{
+
+    const Colour Red = { 255, 0, 0 };
+
+    const Colour Green = { 0, 255, 0 };
+
+    const Colour Blue = { 0, 0, 255 };
+
+
+    const Colour Black = { 0, 0, 0 };
+
+
+    const Colour White = { 255, 255, 255 };
+
+};
