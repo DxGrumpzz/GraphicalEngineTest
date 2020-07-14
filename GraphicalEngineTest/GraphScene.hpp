@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vector>
+#include <ctime>
+#include <cstdlib>
 
 #include "IScene.hpp"
 #include "Vector2D.hpp"
@@ -15,27 +17,52 @@ class GraphScene : public IScene
 {
 
 private:
-    std::vector<Vector2D> _points;
+
+
+    struct GraphPoint
+    {
+        int X;
+        int Y;
+
+        int Value;
+
+    };
+
+
+private:
+
 
     Graphics& _graphics;
     Window& _window;
 
+    std::vector<GraphPoint> _graphPoints;
 
     FontSheet _font;
 
+    Vector2D _graphPosition = { 20, _window.GetWindowHeight() - 20 };
 
-    float _horizontalScale = 1.0f;
-    float _verticalScale = 1.0f;
+    int _pointWidth = 4;
+    int _pointHeight = 4;
 
-    Vector2D _charPos = { 0, 0 };
+    std::vector<Vector2D> _graphXAxisPoints;
+
+
+    int _graphPointPadding = 20;
+
 
 public:
+
 
     GraphScene(Graphics& graphics, Window& window) :
         _graphics(graphics),
         _window(window),
+
         _font(graphics, 16, 28)
     {
+        CreateGraphPoints();
+
+        _graphXAxisPoints.resize(_graphPoints.size(), 0);
+
         _font.LoadFromFile(L"Resources\\Fixedsys16x28.bmp");
     };
 
@@ -45,74 +72,135 @@ public:
 
     virtual void UpdateScene(float deltaTime) override
     {
-        const Mouse& mouse = _window.GetMouse();
-        const Keyboard& keyboard = _window.GetKeyboard();
-
-
-        if (mouse.LeftMouseButton == KeyState::Held)
+        if (_window.GetKeyboard().GetKeyState(VK_RETURN) == KeyState::Pressed)
         {
-            _charPos.X = mouse.X;
-            _charPos.Y = mouse.Y;
-        };
+            _graphXAxisPoints.clear();
+            _graphPoints.clear();
 
+            CreateGraphPoints();
 
-        if (keyboard.GetKeyState(VK_UP) == KeyState::Held)
-        {
-            _verticalScale -= 1.0f * deltaTime;
-        }
-        else if (keyboard.GetKeyState(VK_DOWN) == KeyState::Held)
-        {
-            _verticalScale += 1.f * deltaTime;
-        };
+            _graphXAxisPoints.resize(_graphPoints.size(), 0);
 
-
-        if (keyboard.GetKeyState(VK_LEFT) == KeyState::Held)
-        {
-            _horizontalScale -= 1.0F * deltaTime;
-        }
-        else if (keyboard.GetKeyState(VK_RIGHT) == KeyState::Held)
-        {
-            _horizontalScale += 1.0F * deltaTime;
         };
 
     };
 
-    Vector2D mouseVector = { 5, 5 };
 
     virtual void DrawScene() override
     {
-        //DrawGraph();
+        if (_window.GetMouse().LeftMouseButton == KeyState::Held)
+            _graphPosition = VectorTransformer(_window).MouseToVector(_window.GetMouse());
 
-        const Mouse& mouse = _window.GetMouse();
+        DrawLineAxes();
 
-        VectorTransformer transformer(_window);
+        DrawGraphLinePoints();
 
-        if (mouse.LeftMouseButton == KeyState::Held)
-            mouseVector = transformer.MouseToVector(mouse);
+        DrawGraphPoints();
 
-
-        // DrawLine(transformer.CartesianToScreenSpace(2, 0), transformer.CartesianToScreenSpace(6, 10));
-        DrawLine(transformer.CartesianToScreenSpace(2, 0), mouseVector);
-
-        //_font.DrawString(_charPos.X, _charPos.Y, "0\n12\n3\n456\n78\n9");
+        DrawGraphPointLines();
     };
 
 
 private:
 
-    void DrawGraph()
+
+    void DrawLineAxes()
     {
         for (int x = 0; x < _window.GetWindowWidth(); x++)
         {
-            _graphics.DrawPixel(x, _window.GetWindowHeight() / 2);
+            _graphics.DrawPixel(x, _graphPosition.Y);
+            _graphics.DrawPixel(x, _graphPosition.Y + 1);
         };
 
         for (int y = 0; y < _window.GetWindowHeight(); y++)
         {
-            _graphics.DrawPixel(_window.GetWindowWidth() / 2, y);
+            _graphics.DrawPixel(_graphPosition.X, y);
+            _graphics.DrawPixel(_graphPosition.X + 1, y);
         };
 
     };
+
+
+    void DrawGraphLinePoints()
+    {
+        for (size_t a = 0; a < _graphXAxisPoints.size(); a++)
+        {
+            int xPoint = (((_pointWidth * a)) + (_graphPointPadding * a) + _graphPosition.X) + _graphPointPadding;
+            int yPoint = (_pointHeight + _graphPosition.Y) - (_pointHeight + 1);
+
+            _graphXAxisPoints[a] = Vector2D(xPoint, yPoint);
+
+            for (int x = 0; x < _pointWidth; x++)
+            {
+                for (int y = 0; y < _pointHeight; y++)
+                {
+                    _graphics.DrawPixel(xPoint + x,
+                                        yPoint + y,
+                                        Colours::Red, false);
+                };
+            };
+
+        };
+    };
+
+
+    void DrawGraphPoints()
+    {
+        for (size_t a = 0; a < _graphPoints.size(); a++)
+        {
+            GraphPoint& graphPoint = _graphPoints[a];
+            Vector2D& graphXPoint = _graphXAxisPoints[a];
+
+            graphPoint.X = graphXPoint.X;
+            graphPoint.Y = graphXPoint.Y - graphPoint.Value;
+
+
+            for (int x = 0; x < _pointWidth; x++)
+            {
+                for (int y = 0; y < graphPoint.Value; y++)
+                {
+                    _graphics.DrawPixel(graphPoint.X + x,
+                                        graphPoint.Y + y,
+                                        Colours::Green, false);
+                };
+            };
+        };
+    };
+
+
+    void DrawGraphPointLines()
+    {
+        for (size_t a = 0; a < _graphPoints.size() - 1; a++)
+        {
+            const GraphPoint& currentPoint = _graphPoints[a];
+            const GraphPoint& nextPoint = _graphPoints[a + 1];
+           
+
+            for (int b = 0; b < 4; b++)
+            {
+                DrawLine(Vector2D(currentPoint.X, currentPoint.Y) + b, Vector2D(nextPoint.X, nextPoint.Y) + b, Colours::Green, false);
+            };
+        };
+    };
+
+
+    void CreateGraphPoints()
+    {
+        std::srand(std::time(0));
+
+        int numberOfGraphPoints = std::rand() % 20;
+
+        _graphPoints.reserve(numberOfGraphPoints);
+
+
+        for (size_t a = 0; a < numberOfGraphPoints; a++)
+        {
+            int value = std::rand() % 400 + 5;
+
+            _graphPoints.push_back({ 0, 0, value });
+        };
+    };
+
 
     /// <summary>
     /// Draw a line segment between 2 points
@@ -120,7 +208,7 @@ private:
     /// <param name="p0"></param>
     /// <param name="p1"></param>
     /// <param name="colour"></param>
-    void DrawLine(Vector2D p0, Vector2D p1, Colour colour = { 255,255,255 })
+    void DrawLine(Vector2D p0, Vector2D p1, Colour colour = { 255,255,255 }, bool checkBounds = true)
     {
         // Left "leaning" line
         if (p0.X >= p1.X)
@@ -139,14 +227,14 @@ private:
 
                 if (p0.Y > p1.Y)
                     std::swap(p0, p1);
-                
+
                 float x = 0;
 
                 for (float y = p0.Y; y < p1.Y; y++)
                 {
                     x = slope * y + xIntercept;
 
-                    _graphics.DrawPixel(x, y, colour, false);
+                    _graphics.DrawPixel(x, y, colour, checkBounds);
                 };
             }
             else
@@ -161,7 +249,7 @@ private:
                 {
                     y = slope * x + yIntercept;
 
-                    _graphics.DrawPixel(x, y, colour, false);
+                    _graphics.DrawPixel(x, y, colour, checkBounds);
                 };
             };
         }
@@ -189,7 +277,7 @@ private:
                 {
                     x = slope * y + xIntercept;
 
-                    _graphics.DrawPixel(x, y, colour, false);
+                    _graphics.DrawPixel(x, y, colour, checkBounds);
                 };
             }
             else
@@ -204,11 +292,12 @@ private:
                 {
                     y = slope * x + yIntercept;
 
-                    _graphics.DrawPixel(x, y, colour, false);
+                    _graphics.DrawPixel(x, y, colour, checkBounds);
                 };
             };
         };
 
     };
+
 
 };
