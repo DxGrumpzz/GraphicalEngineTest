@@ -92,5 +92,8 @@
     <ClInclude Include="FontSheet.hpp">
       <Filter>Bitmaps</Filter>
     </ClInclude>
+    <ClInclude Include="TestScene.hpp">
+      <Filter>Scenes</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

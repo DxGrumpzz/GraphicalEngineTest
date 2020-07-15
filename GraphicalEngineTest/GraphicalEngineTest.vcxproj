@@ -182,6 +182,7 @@
     <ClInclude Include="Sprite.hpp" />
     <ClInclude Include="SpriteChromaKeyEffect.hpp" />
     <ClInclude Include="SpriteTransparencyEffect.hpp" />
+    <ClInclude Include="TestScene.hpp" />
     <ClInclude Include="Vector2D.hpp" />
     <ClInclude Include="Vertex.hpp" />
     <ClInclude Include="Window.hpp" />
