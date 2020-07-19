@@ -28,8 +28,8 @@ public:
 
 public:
 
-    virtual Colour& ApplyEffect(int screenX, int screenY,
-                                int spritePixelX, int spritePixelY,
+    virtual Colour& ApplyEffect(std::size_t screenX, std::size_t screenY,
+                                std::size_t spritePixelX, std::size_t spritePixelY,
                                 Colour& pixel) override
     {
 
@@ -42,9 +42,20 @@ public:
 
         Colour& screenPixel = _graphics.GetPixel(screenX, screenY);
 
-        pixel.Red = pixel.Red * Alpha + (screenPixel.Red + Alpha) * (1 - Alpha);
-        pixel.Green = pixel.Green * Alpha + (screenPixel.Green + Alpha) * (1 - Alpha);
-        pixel.Blue = pixel.Blue * Alpha + (screenPixel.Blue + Alpha) * (1 - Alpha);
+
+        pixel.Red = static_cast<std::uint8_t>(pixel.Red * Alpha + (screenPixel.Red + Alpha) * (1 - Alpha));
+        pixel.Green = static_cast<std::uint8_t>(pixel.Green * Alpha + (screenPixel.Green + Alpha) * (1 - Alpha));
+        pixel.Blue = static_cast<std::uint8_t>(pixel.Blue * Alpha + (screenPixel.Blue + Alpha) * (1 - Alpha));
+
+        /*
+        float pixelRed = pixel.Red * Alpha + (screenPixel.Red + Alpha) * (1 - Alpha);
+        float pixelGreen = pixel.Green * Alpha + (screenPixel.Green + Alpha) * (1 - Alpha);
+        float pixelBlue = pixel.Blue * Alpha + (screenPixel.Blue + Alpha) * (1 - Alpha);
+
+        pixel.Red = static_cast<std::uint8_t>(pixelRed);
+        pixel.Green = static_cast<std::uint8_t>(pixelGreen);
+        pixel.Blue = static_cast<std::uint8_t>(pixelBlue);
+        */
 
         return pixel;
     };

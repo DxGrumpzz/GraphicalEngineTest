@@ -145,7 +145,7 @@ public:
                 if (currentChar == '\n')
                 {
                     x = startingX;
-                    y += (_glyphHeight * verticalScale);
+                    y += (_glyphHeight * static_cast<int>(verticalScale));
 
                     characterCounter = 0;
                     continue;
@@ -161,9 +161,9 @@ public:
                 float y1 = (_glyphHeight * characterPos.Y) + _glyphHeight;
 
 
-                for (double spriteX = 0; spriteX < x1 - x0; spriteX++)
+                for (int spriteX = 0; spriteX < x1 - x0; spriteX++)
                 {
-                    for (double spriteY = 0; spriteY < y1 - y0; spriteY++)
+                    for (int spriteY = 0; spriteY < y1 - y0; spriteY++)
                     {
 
                         // To accomodate loss in number of pixels drawn, iterate through the scalars and draw "skipped" pixels
@@ -171,9 +171,12 @@ public:
                         {
                             for (double scaleY = 0; scaleY < verticalScale; scaleY++)
                             {
-                                Colour spritePixel = _sprite.GetPixel(spriteX + x0, spriteY + y0);
+                                Colour spritePixel = _sprite.GetPixel(static_cast<std::size_t>(spriteX) + static_cast<std::size_t>(x0), 
+                                                                      static_cast<std::size_t>(spriteY) + static_cast<std::size_t>(y0));
 
-                                _graphics.DrawPixel((x + (spriteX * horizontalScale) + scaleX) + (characterCounter * _glyphWidth) * horizontalScale, y + (spriteY * verticalScale) + scaleY, spritePixel, false);
+                                _graphics.DrawPixel(static_cast<int>((x + (spriteX * horizontalScale) + scaleX) + (characterCounter * _glyphWidth) * horizontalScale), 
+                                                    static_cast<int>(y + (spriteY * verticalScale) + scaleY), 
+                                                    spritePixel, false);
                             };
                         };
 
@@ -195,7 +198,7 @@ public:
                 if (currentChar == '\n')
                 {
                     x = startingX;
-                    y += (_glyphHeight * verticalScale);
+                    y += (_glyphHeight * static_cast<int>(verticalScale));
 
                     characterCounter = 0;
                     continue;
@@ -210,13 +213,16 @@ public:
                 float y1 = (_glyphHeight * characterPos.Y) + _glyphHeight;
 
 
-                for (double spriteX = 0; spriteX < (x1 - x0); spriteX++)
+                for (double spriteX = 0; spriteX < static_cast<double>(x1) - static_cast<double>(x0); spriteX++)
                 {
-                    for (double spriteY = 0; spriteY < (y1 - y0); spriteY++)
+                    for (double spriteY = 0; spriteY < static_cast<double>(y1) - static_cast<double>(y0); spriteY++)
                     {
-                        Colour spritePixel = _sprite.GetPixel((spriteX + x0), (spriteY + y0));
+                        Colour spritePixel = _sprite.GetPixel(static_cast<std::size_t>(spriteX + x0), 
+                                                              static_cast<std::size_t>(spriteY + y0));
 
-                        _graphics.DrawPixel(x + (spriteX * horizontalScale) + (characterCounter * _glyphWidth) * horizontalScale, y + (spriteY * verticalScale), spritePixel, false);
+                        _graphics.DrawPixel(static_cast<int>(x + (spriteX * horizontalScale) + (characterCounter * _glyphWidth) * horizontalScale), 
+                                            static_cast<int>(y + (spriteY * verticalScale)), 
+                                            spritePixel, false);
                     };
                 };
 
@@ -238,8 +244,8 @@ public:
         Vector2D characterPos = GetCharacterPos(character);
 
         _sprite.DrawSprite(x, y,
-                           _glyphWidth * characterPos.X, _glyphHeight * characterPos.Y,
-                           (_glyphWidth * characterPos.X) + _glyphWidth, (_glyphHeight * characterPos.Y) + _glyphHeight);
+                           _glyphWidth * static_cast<int>(characterPos.X), _glyphHeight * static_cast<int>(characterPos.Y),
+                           (_glyphWidth * static_cast<int>(characterPos.X)) + _glyphWidth, (_glyphHeight * static_cast<int>(characterPos.Y)) + _glyphHeight);
     };
 
 
@@ -259,8 +265,8 @@ public:
         Vector2D characterPos = GetCharacterPos(character);
 
         _sprite.DrawSprite(x, y,
-                           _glyphWidth * characterPos.X, _glyphHeight * characterPos.Y,
-                           (_glyphWidth * characterPos.X) + _glyphWidth, (_glyphHeight * characterPos.Y) + _glyphHeight,
+                           _glyphWidth * static_cast<int>(characterPos.X), _glyphHeight * static_cast<int>(characterPos.Y),
+                           (_glyphWidth * static_cast<int>(characterPos.X)) + _glyphWidth, (_glyphHeight * static_cast<int>(characterPos.Y)) + _glyphHeight,
                            horizontalScale,
                            verticalScale);
     };

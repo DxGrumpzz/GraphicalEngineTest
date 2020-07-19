@@ -48,7 +48,7 @@ private:
 
     FontSheet _font;
 
-    Vector2D _graphPosition = { 20, _window.GetWindowHeight() - 20 };
+    Vector2D _graphPosition = { 20, static_cast<float>(_window.GetWindowHeight() - 20) };
 
     int _pointWidth = 4;
     int _pointHeight = 4;
@@ -69,7 +69,7 @@ public:
         _font(graphics, 16, 28)
     {
         // Generate random number of points
-        std::srand(std::time(0));
+        std::srand(static_cast<int>(std::time(0)));
 
 
         // Generate a graph point list
@@ -123,15 +123,15 @@ private:
         // Draw a graph line in the X axis
         for (int x = 0; x < _window.GetWindowWidth(); x++)
         {
-            _graphics.DrawPixel(x, _graphPosition.Y, Colours::White, false);
-            _graphics.DrawPixel(x, _graphPosition.Y + 1, Colours::White, false);
+            _graphics.DrawPixel(x, static_cast<int>(_graphPosition.Y), Colours::White, false);
+            _graphics.DrawPixel(x, static_cast<int>(_graphPosition.Y + 1), Colours::White, false);
         };
 
         // Draw a graph line in the Y axis
         for (int y = 0; y < _window.GetWindowHeight(); y++)
         {
-            _graphics.DrawPixel(_graphPosition.X, y, Colours::White, false);
-            _graphics.DrawPixel(_graphPosition.X + 1, y, Colours::White, false);
+            _graphics.DrawPixel(static_cast<int>(_graphPosition.X), y, Colours::White, false);
+            _graphics.DrawPixel(static_cast<int>(_graphPosition.X + 1), y, Colours::White, false);
         };
 
     };
@@ -146,10 +146,10 @@ private:
         for (size_t a = 0; a < _graphXAxisPoints.size(); a++)
         {
             // Calculate x and y point relative to the graph's center
-            int xPoint = (((_pointWidth * a)) + (_graphPointPadding * a) + _graphPosition.X) + _graphPointPadding;
-            int yPoint = (_pointHeight + _graphPosition.Y) - (_pointHeight + 1);
+            int xPoint = (((_pointWidth * static_cast<int>(a))) + (_graphPointPadding * static_cast<int>(a)) + static_cast<int>(_graphPosition.X)) + _graphPointPadding;
+            int yPoint = (_pointHeight + static_cast<int>(_graphPosition.Y)) - (_pointHeight + 1);
 
-            _graphXAxisPoints[a] = Vector2D(xPoint, yPoint);
+            _graphXAxisPoints[a] = Vector2D(static_cast<float>(xPoint), static_cast<float>(yPoint));
 
             // Draw the point
             for (int x = 0; x < _pointWidth; x++)
@@ -178,10 +178,10 @@ private:
             Vector2D& graphXLinePoint = _graphXAxisPoints[a];
 
             // Assign graph point values
-            graphPoint.X = graphXLinePoint.X;
+            graphPoint.X = static_cast<int>(graphXLinePoint.X);
 
             // To get the correct position of the graph's Y value we need to translate back by the points value
-            graphPoint.Y = graphXLinePoint.Y - graphPoint.Value;
+            graphPoint.Y = static_cast<int>(graphXLinePoint.Y) - graphPoint.Value;
 
 
             // Draw the point as a solid rectangle going from the point's x-y to the bottom (y=0) of the graph
@@ -212,7 +212,7 @@ private:
             // Draw a thicc line 
             for (int b = 0; b < (_pointWidth + _pointHeight) / 2; b++)
             {
-                DrawLine(Vector2D(currentPoint.X, currentPoint.Y) + b, Vector2D(nextPoint.X, nextPoint.Y) + b, Colours::Green, false);
+                _graphics.DrawLine(Vector2D(static_cast<float>(currentPoint.X), static_cast<float>(currentPoint.Y + b)), Vector2D(static_cast<float>(nextPoint.X), static_cast<float>(nextPoint.Y + b)), Colours::Green, false);
             };
         };
     };
@@ -227,7 +227,7 @@ private:
         int minGraphPoints = 5;
 
         int numberOfGraphPoints = std::rand() % (maxGraphPoints - minGraphPoints + 1) + minGraphPoints;
-            
+
         _graphPoints.reserve(numberOfGraphPoints);
 
 
@@ -240,102 +240,5 @@ private:
         };
     };
 
-
-    /// <summary>
-    /// Draw a line segment between 2 points
-    /// </summary>
-    /// <param name="p0"></param>
-    /// <param name="p1"></param>
-    /// <param name="colour"></param>
-    void DrawLine(Vector2D p0, Vector2D p1, Colour colour = { 255,255,255 }, bool checkBounds = true)
-    {
-        // Left "leaning" line
-        if (p0.X >= p1.X)
-        {
-            float run = p0.X - p1.X;
-            float rise = p0.Y - p1.Y;
-
-            // If the rise starts getting larger than the run the line starts to break up, 
-            // so we check when that happens and use "inverses" to draw the new line
-            // Instead of y-Intercept we use x-Intercept, and replace x's with y's positions
-            if (std::abs(rise) > std::abs(run))
-            {
-                float slope = run / rise;
-
-                float xIntercept = p0.X - slope * p0.Y;
-
-                if (p0.Y > p1.Y)
-                    std::swap(p0, p1);
-
-                float x = 0;
-
-                for (float y = p0.Y; y < p1.Y; y++)
-                {
-                    x = slope * y + xIntercept;
-
-                    _graphics.DrawPixel(x, y, colour, checkBounds);
-                };
-            }
-            else
-            {
-                float slope = rise / run;
-
-                float yIntercept = p0.Y - slope * p0.X;
-
-                float y = 0;
-
-                for (float x = p1.X; x < p0.X; x++)
-                {
-                    y = slope * x + yIntercept;
-
-                    _graphics.DrawPixel(x, y, colour, checkBounds);
-                };
-            };
-        }
-        // Right "leaning" line
-        else
-        {
-            float run = p1.X - p0.X;
-            float rise = p1.Y - p0.Y;
-
-            // If the rise starts getting larger than the run the line starts to break up, 
-            // so we check when that happens and use "inverses" to draw the new line
-            // Instead of y-Intercept we use x-Intercept, and replace x's with y's positions
-            if (std::abs(rise) > std::abs(run))
-            {
-                float slope = run / rise;
-
-                float xIntercept = p0.X - slope * p0.Y;
-
-                if (p0.Y > p1.Y)
-                    std::swap(p0, p1);
-
-                float x = 0;
-
-                for (float y = p0.Y; y < p1.Y; y++)
-                {
-                    x = slope * y + xIntercept;
-
-                    _graphics.DrawPixel(x, y, colour, checkBounds);
-                };
-            }
-            else
-            {
-                float slope = rise / run;
-
-                float yIntercept = p0.Y - slope * p0.X;
-
-                float y = 0;
-
-                for (float x = p0.X; x < p1.X; x++)
-                {
-                    y = slope * x + yIntercept;
-
-                    _graphics.DrawPixel(x, y, colour, checkBounds);
-                };
-            };
-        };
-
-    };
 
 };

@@ -118,7 +118,7 @@ public:
         Width = bitmapInfo.biWidth;
 
         // Create the sprite pixels 
-        PixelCount = Height * Width;
+        PixelCount = static_cast<std::size_t>(Height) * static_cast<std::size_t>(Width);
         Pixels = new Colour[PixelCount];
 
         memset(Pixels, 0, PixelCount * sizeof(Colour));
@@ -179,7 +179,7 @@ public:
                              effects);
 
                 // Draw the pixel
-                _graphics.DrawPixel(spriteX + x, spriteY + y, spritePixel, false);
+                _graphics.DrawPixel(static_cast<int>(spriteX + x), static_cast<int>(spriteY + y), spritePixel, false);
             };
         };
     };
@@ -201,21 +201,23 @@ public:
                     int x1, int y1,
                     const std::vector<ISpriteEffect*>& effects = {})
     {
-
         // Iterate throught the sprite's pixels based on x0, y0, x1, y1 offsets
-        for (size_t spriteX = 0; spriteX < x1 - x0; spriteX++)
+        for (int spriteX = 0; spriteX < static_cast<std::size_t>(x1) - static_cast<std::size_t>(x0); spriteX++)
         {
-            for (size_t spriteY = 0; spriteY < y1 - y0; spriteY++)
+            for (int spriteY = 0; spriteY < static_cast<std::size_t>(y1) - static_cast<std::size_t>(y0); spriteY++)
             {
                 // Get a copy of the pixel offsetted by beggining offsets
-                Colour spritePixel = GetPixel((spriteX + x0), (spriteY + y0));
+                Colour spritePixel = GetPixel(static_cast<std::size_t>(spriteX) + static_cast<std::size_t>(x0),
+                                              static_cast<std::size_t>(spriteY) + static_cast<std::size_t>(y0));
 
-                ApplyEffects(spriteX + x, spriteY + y,
-                             (spriteX + x0), (spriteY + y0),
+                ApplyEffects(static_cast<std::size_t>(spriteX) + static_cast<std::size_t>(x),
+                             static_cast<std::size_t>(spriteY) + static_cast<std::size_t> (y),
+                             static_cast<std::size_t>(spriteX) + static_cast<std::size_t>(x0),
+                             static_cast<std::size_t>(spriteY) + static_cast<std::size_t>(y0),
                              spritePixel,
                              effects);
 
-                _graphics.DrawPixel(spriteX + x, spriteY + y, spritePixel, false);
+                _graphics.DrawPixel(static_cast<int>(spriteX + x), static_cast<int>(spriteY + y), spritePixel, false);
             };
         };
     };
@@ -247,28 +249,31 @@ public:
             verticalScale > 1.f)
         {
             // Iterate through the sprite segment
-            for (double spriteX = 0; spriteX < x1 - x0; spriteX++)
+            for (int spriteX = 0; spriteX < x1 - x0; spriteX++)
             {
-                for (double spriteY = 0; spriteY < y1 - y0; spriteY++)
+                for (int spriteY = 0; spriteY < y1 - y0; spriteY++)
                 {
 
                     // To accomodate loss in number of pixels drawn, iterate through the scalars and draw "skipped" pixels
-                    for (double scaleX = 0; scaleX < horizontalScale; scaleX++)
+                    for (float scaleX = 0; scaleX < horizontalScale; scaleX++)
                     {
-                        for (double scaleY = 0; scaleY < verticalScale; scaleY++)
+                        for (float scaleY = 0; scaleY < verticalScale; scaleY++)
                         {
-                            Colour spritePixel = GetPixel((spriteX + x0), (spriteY + y0));
+                            Colour spritePixel = GetPixel(static_cast<std::size_t>(spriteX) + static_cast<std::size_t>(x0), 
+                                                          static_cast<std::size_t>(spriteY) + static_cast<std::size_t>(y0));
 
 
                             ApplyEffects(x + (spriteX * horizontalScale) + scaleX,
                                          y + (spriteY * verticalScale) + scaleY,
-                                         (spriteX + x0),
-                                         (spriteY + y0),
+                                         static_cast<std::size_t>(spriteX) + static_cast<std::size_t>(x0),
+                                         static_cast<std::size_t>(spriteY) + static_cast<std::size_t>(y0),
                                          spritePixel,
                                          effects);
 
 
-                            _graphics.DrawPixel(x + (spriteX * horizontalScale) + scaleX, y + (spriteY * verticalScale) + scaleY, spritePixel, false);
+                            _graphics.DrawPixel(static_cast<int>(x + (spriteX * horizontalScale) + scaleX),
+                                                static_cast<int>(y + (spriteY * verticalScale) + scaleY),
+                                                spritePixel, false);
                         };
                     };
 
@@ -277,20 +282,23 @@ public:
         }
         else
         {
-            for (double spriteX = 0; spriteX < (x1 - x0) - (horizontalScale + 1); spriteX++)
+            for (double spriteX = 0; spriteX < static_cast<std::size_t>(x1) - static_cast<std::size_t>(x0); spriteX++)
             {
-                for (double spriteY = 0; spriteY < (y1 - y0) - (verticalScale + 1); spriteY++)
+                for (double spriteY = 0; spriteY < static_cast<std::size_t>(y1) - static_cast<std::size_t>(y0); spriteY++)
                 {
-                    Colour spritePixel = GetPixel((spriteX + x0), (spriteY + y0));
+                    Colour spritePixel = GetPixel(static_cast<std::size_t>(spriteX + x0), static_cast<std::size_t>(spriteY + y0));
 
 
-                    ApplyEffects(x + (spriteX * horizontalScale), y + (spriteY * verticalScale),
-                                 (spriteX + x0), (spriteY + y0),
+                    ApplyEffects(static_cast<std::size_t>(x + (spriteX * horizontalScale)),
+                                 static_cast<std::size_t>(y + (spriteY * verticalScale)),
+                                 static_cast<std::size_t>(spriteX + x0),
+                                 static_cast<std::size_t>(spriteY + y0),
                                  spritePixel,
                                  effects);
 
 
-                    _graphics.DrawPixel(x + (spriteX * horizontalScale), y + (spriteY * verticalScale), spritePixel, false);
+                    _graphics.DrawPixel(static_cast<int>(x + (spriteX * horizontalScale)),
+                                        static_cast<int>(y + (spriteY * verticalScale)), spritePixel, false);
                 };
             };
         };
@@ -311,7 +319,7 @@ public:
 
 public:
 
-    Colour& GetPixel(int x, int y) const
+    Colour& GetPixel(std::size_t x, std::size_t y) const
     {
         size_t pixelDataIndexer = x + Width * y;
 
@@ -332,8 +340,8 @@ private:
     /// <param name="spriteY"> Position of the sprite's pixel in the Y axis</param>
     /// <param name="spritePixel"> The pixel to affect </param>
     /// <param name="effects"> The list of effects </param>
-    void ApplyEffects(int screenX, int screenY,
-                      int spriteX, int spriteY,
+    void ApplyEffects(std::size_t screenX, std::size_t screenY,
+                      std::size_t spriteX, std::size_t spriteY,
                       Colour& spritePixel,
                       const std::vector<ISpriteEffect*>& effects)
     {

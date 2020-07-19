@@ -214,11 +214,11 @@ public:
 
                 float x = 0;
 
-                for (float y = p0.Y; y < p1.Y; y++)
+                for (int y = static_cast<int>(p0.Y); y < p1.Y; y++)
                 {
                     x = slope * y + xIntercept;
 
-                    DrawPixel(x, y, colour, checkBounds);
+                    DrawPixel(static_cast<int>(x), static_cast<int>(y), colour, checkBounds);
                 };
             }
             else
@@ -229,11 +229,11 @@ public:
 
                 float y = 0;
 
-                for (float x = p1.X; x < p0.X; x++)
+                for (int x = static_cast<int>(p1.X); x < p0.X; x++)
                 {
                     y = slope * x + yIntercept;
 
-                    DrawPixel(x, y, colour, checkBounds);
+                    DrawPixel(static_cast<int>(x), static_cast<int>(y), colour, checkBounds);
                 };
             };
         }
@@ -257,11 +257,11 @@ public:
 
                 float x = 0;
 
-                for (float y = p0.Y; y < p1.Y; y++)
+                for (int y = static_cast<int>(p0.Y); y < p1.Y; y++)
                 {
                     x = slope * y + xIntercept;
 
-                    DrawPixel(x, y, colour, checkBounds);
+                    DrawPixel(static_cast<int>(x), static_cast<int>(y), colour, checkBounds);
                 };
             }
             else
@@ -272,11 +272,11 @@ public:
 
                 float y = 0;
 
-                for (float x = p0.X; x < p1.X; x++)
+                for (int x = static_cast<int>(p0.X); x < p1.X; x++)
                 {
                     y = slope * x + yIntercept;
 
-                    DrawPixel(x, y, colour, checkBounds);
+                    DrawPixel(static_cast<int>(x), static_cast<int>(y), colour, checkBounds);
                 };
             };
         };
@@ -306,7 +306,7 @@ public:
     /// Get a pixel based on x and y position
     /// </summary>
     /// <returns></returns>
-    Colour& GetPixel(int x, int y)
+    Colour& GetPixel(std::size_t x, std::size_t y)
     {
         size_t pixelDataIndexer = x + _windowWidth * y;
 
