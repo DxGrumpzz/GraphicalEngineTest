@@ -176,6 +176,7 @@
     <ClInclude Include="ISpriteEffect.hpp" />
     <ClInclude Include="Keyboard.hpp" />
     <ClInclude Include="KeyState.hpp" />
+    <ClInclude Include="Maths.hpp" />
     <ClInclude Include="Maths\VectorTransformer.hpp" />
     <ClInclude Include="Mouse.hpp" />
     <ClInclude Include="Scenes\IScene.hpp" />
