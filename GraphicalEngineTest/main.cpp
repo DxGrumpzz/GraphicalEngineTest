@@ -79,6 +79,7 @@ void DrawFrame(float deltaTime)
 
 };
 
+
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nShowCmd)
 {
 
@@ -97,11 +98,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     // Setup graphics components
     graphics->SetupGraphics(window->GetHWND());
 
-    // Temporarly removed, I don't have a need for a bitmap scene at the moment
-    //scenes.push_back(new BitmapScene(*graphics, *window));
-
     scenes.push_back(new GraphScene(*graphics, *window));
     scenes.push_back(new TestScene(*graphics, *window));
+    scenes.push_back(new BitmapScene(*graphics, *window));
 
     currentScene = scenes.end() - 1;
 

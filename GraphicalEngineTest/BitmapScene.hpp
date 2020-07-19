@@ -36,7 +36,6 @@ private:
     float _verticalScale = 1.0f;
 
 
-
     int _textureX = 7;
     int _textureY = 12;
 
@@ -50,21 +49,14 @@ public:
         _window(window),
         _sprite(graphics)
     {
-        std::wstring bitmapPath = L"Resources\\0001.bmp";
-        //std::wstring bitmapPath = L"Resources\\0003.bmp";
-        // std::wstring bitmapPath = L"Resources\\Vikings_smallenemies_004.bmp";
+        // std::wstring bitmapPath = L"Resources\\a.bmp";
+        std::wstring bitmapPath = L"Resources\\dg_iso32.bmp";
 
         _sprite.LoadFromFile(bitmapPath);
     };
 
 
 public:
-
-
-    float Normalize(int val, int max, int min)
-    {
-        return (val - min) / (max - min);
-    }
 
 
     virtual void UpdateScene(float deltaTime) override
@@ -74,8 +66,8 @@ public:
 
         if (mouse.LeftMouseButton == KeyState::Held)
         {
-            _p0.X = mouse.X;
-            _p0.Y = mouse.Y;
+            _p0.X = static_cast<float>(mouse.X);
+            _p0.Y = static_cast<float>(mouse.Y);
         };
 
         if (keyboard.GetKeyState(VK_UP) == KeyState::Held)
@@ -139,16 +131,28 @@ public:
             };
         };
 
+        /*
+        _sprite.DrawSprite(static_cast<int>(_p0.X), static_cast<int>(_p0.Y),
+                           0,0,
+                           _sprite.Width,
+                           _sprite.Height,
+                           _horizontalScale,
+                           _verticalScale,
+                           {
+                               &SpriteTransparencyEffect(_graphics, _alpha),
+                               &SpriteChromaKeyEffect({ 255, 0, 255 }, _sprite, _graphics),
+                           });
+        */
 
-        _sprite.DrawSprite(_p0.X, _p0.Y,
-                                     (_textureWidth * _textureX), (_textureHeight * _textureY),
-                                     (_textureWidth * _textureX) + _textureWidth, (_textureHeight * _textureY) + _textureHeight,
-                                     _horizontalScale,
-                                     _verticalScale,
-                                     {
-                                         &SpriteTransparencyEffect(_graphics, _alpha),
-                                         &SpriteChromaKeyEffect({ 0, 0, 0}, _sprite, _graphics),
-                                     });
+        _sprite.DrawSprite(static_cast<int>(_p0.X), static_cast<int>(_p0.Y),
+                           (_textureWidth * _textureX), (_textureHeight * _textureY),
+                           (_textureWidth * _textureX) + _textureWidth, (_textureHeight * _textureY) + _textureHeight,
+                           _horizontalScale,
+                           _verticalScale,
+                           {
+                               &SpriteTransparencyEffect(_graphics, _alpha),
+                               &SpriteChromaKeyEffect({ 0, 0, 0}, _sprite, _graphics),
+                           });
 
     };
 
