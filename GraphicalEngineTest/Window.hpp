@@ -142,7 +142,7 @@ public:
         return _windowHeight;
     };
 
-    const Mouse& GetMouse() 
+    const Mouse& GetMouse()
     {
         return _mouse;
     };
@@ -218,7 +218,6 @@ private:
                 int keycode = static_cast<int>(wParam);
 
                 _keyboard._keys[keycode].TextAutoRepeat = false;
-                _keyboard._keys[keycode].KeyState = KeyState::Released;
 
                 return 0;
             };
@@ -323,9 +322,14 @@ private:
             return;
         };
 
+
         // Update keys 
         for (int a = 0; a < Keyboard::NUMBER_OF_KEYS; a++)
-            _keyboard._keys[a].KeyState = GetNewKeyState(_keyboard._keys[a].Key, _keyboard._keys[a].KeyState);
+        {
+            Key& key = _keyboard._keys[a];
+
+            key.KeyState = GetNewKeyState(key.Key, key.KeyState);
+        };
 
     };
 
@@ -336,34 +340,36 @@ private:
     /// <param name="mouseKeyCode"> The mouse button key code </param>
     /// <param name="previousMouseKey"> The previous mouse key state </param>
     /// <returns></returns>
-    KeyState GetNewKeyState(int mouseKeyCode, KeyState previousMouseKey)
+    KeyState GetNewKeyState(int KeyCode, KeyState previousKeyState)
     {
         // Check if mouse button is pressed
-        if (GetAsyncKeyState(mouseKeyCode))
+        if (GetAsyncKeyState(KeyCode))
         {
-            // If mouse key was pressed or held before
-            if (previousMouseKey == KeyState::Held ||
-                previousMouseKey == KeyState::Pressed)
+            // If key was pressed or held before
+            if (previousKeyState == KeyState::Held ||
+                previousKeyState == KeyState::Pressed)
             {
-                // Set key state to held
+                // Set key state to held from a press
                 return KeyState::Held;
             }
-            // If mouse was None, or released 
+            // If key state was None, or released 
             else
-                // Set mouse to pressed
+            {
+                // Return pressed key state
                 return KeyState::Pressed;
+            };
         }
-        // If nothing happend with the mouse key
+        // If key state hasn't changed between frames
         else
         {
             // If mouse key was previously held or pressed
-            if (previousMouseKey == KeyState::Held ||
-                previousMouseKey == KeyState::Pressed)
+            if (previousKeyState == KeyState::Held ||
+                previousKeyState == KeyState::Pressed)
             {
                 // Set it to released
                 return KeyState::Released;
             }
-            // If mouse still wasn't pressed 
+            // If key still wasn't pressed 
             else
             {
                 // Set it's state to none because nothing changed

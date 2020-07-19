@@ -22,19 +22,18 @@ private:
     /// <summary>
     /// The number of available keys
     /// </summary>
-    static constexpr std::size_t NUMBER_OF_KEYS = 256;
+    static constexpr std::size_t NUMBER_OF_KEYS = 255;
 
 private:
 
     /// <summary>
     /// An array that stores the keys 
     /// </summary>
-    Key _keys[NUMBER_OF_KEYS];
+    Key _keys[NUMBER_OF_KEYS] = { 0 };
 
 public:
 
-    Keyboard() :
-        _keys { 0 }
+    Keyboard()
     {
         // Initialize the keys array
         for (int a = 0; a < NUMBER_OF_KEYS; a++)
