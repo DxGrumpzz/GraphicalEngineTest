@@ -3,6 +3,7 @@
 #include <cmath>
 #include <vector>
 #include <string>
+#include <cstring>
 
 #include "Window.hpp"
 #include "Graphics.hpp"
@@ -11,6 +12,7 @@
 
 #include "BitmapScene.hpp"
 #include "GraphScene.hpp"
+#include "TestScene.hpp"
 
 
 
@@ -68,7 +70,6 @@ void CycleScences()
 };
 
 
-
 void DrawFrame(float deltaTime)
 {
     CycleScences();
@@ -78,10 +79,9 @@ void DrawFrame(float deltaTime)
 
 };
 
-
-
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nShowCmd)
 {
+
     // Registered name of this window
     const wchar_t* windowClassName = L"DirectXWindow";
 
@@ -97,9 +97,12 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     // Setup graphics components
     graphics->SetupGraphics(window->GetHWND());
 
-    scenes.push_back(new BitmapScene(*graphics, *window));
+    // Temporarly removed, I don't have a need for a bitmap scene at the moment
+    //scenes.push_back(new BitmapScene(*graphics, *window));
+
     scenes.push_back(new GraphScene(*graphics, *window));
-    
+    scenes.push_back(new TestScene(*graphics, *window));
+
     currentScene = scenes.end() - 1;
 
     // Show the window
@@ -138,11 +141,12 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
             // Get FPS by dividing the number of elapsed frames and elapsed time
             float fps = elapsedFrames / elapsedFramesSeconds;
 
-            // Show the fps
-            std::wstring str(L"FPS: ");
-            str.append(std::to_wstring(fps));
+            // Format the FPS into a string
+            wchar_t str[127];
+            std::swprintf(str, 127, L"FPS: %.2f", fps);
 
-            SetWindowTextW(window->GetHWND(), str.c_str());
+            // Show the fps
+            SetWindowTextW(window->GetHWND(), str);
 
             elapsedFrames = 0;
             elapsedFramesSeconds = 0;
