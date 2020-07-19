@@ -68,6 +68,10 @@ public:
 
         _font(graphics, 16, 28)
     {
+        // Generate random number of points
+        std::srand(std::time(0));
+
+
         // Generate a graph point list
         CreateRandomGraphPoints();
 
@@ -92,14 +96,15 @@ public:
 
             _graphXAxisPoints.resize(_graphPoints.size(), 0);
         };
+
+
+        if (_window.GetMouse().LeftMouseButton == KeyState::Held)
+            _graphPosition = VectorTransformer(_window).MouseToVector(_window.GetMouse());
     };
 
 
     virtual void DrawScene() override
     {
-        if (_window.GetMouse().LeftMouseButton == KeyState::Held)
-            _graphPosition = VectorTransformer(_window).MouseToVector(_window.GetMouse());
-
         DrawLineAxes();
 
         DrawGraphLinePoints();
@@ -118,15 +123,15 @@ private:
         // Draw a graph line in the X axis
         for (int x = 0; x < _window.GetWindowWidth(); x++)
         {
-            _graphics.DrawPixel(x, _graphPosition.Y);
-            _graphics.DrawPixel(x, _graphPosition.Y + 1);
+            _graphics.DrawPixel(x, _graphPosition.Y, Colours::White, false);
+            _graphics.DrawPixel(x, _graphPosition.Y + 1, Colours::White, false);
         };
 
         // Draw a graph line in the Y axis
         for (int y = 0; y < _window.GetWindowHeight(); y++)
         {
-            _graphics.DrawPixel(_graphPosition.X, y);
-            _graphics.DrawPixel(_graphPosition.X + 1, y);
+            _graphics.DrawPixel(_graphPosition.X, y, Colours::White, false);
+            _graphics.DrawPixel(_graphPosition.X + 1, y, Colours::White, false);
         };
 
     };
@@ -218,11 +223,11 @@ private:
     /// </summary>
     void CreateRandomGraphPoints()
     {
-        // Generate random number of points
-        std::srand(std::time(0));
+        int maxGraphPoints = 20;
+        int minGraphPoints = 5;
 
-        int numberOfGraphPoints = std::rand() % 20;
-
+        int numberOfGraphPoints = std::rand() % (maxGraphPoints - minGraphPoints + 1) + minGraphPoints;
+            
         _graphPoints.reserve(numberOfGraphPoints);
 
 
@@ -332,6 +337,5 @@ private:
         };
 
     };
-
 
 };
