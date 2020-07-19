@@ -185,6 +185,104 @@ public:
         pixel = pixelColour;
     };
 
+
+    /// <summary>
+    /// Draw a line segment between 2 points
+    /// </summary>
+    /// <param name="p0"></param>
+    /// <param name="p1"></param>
+    /// <param name="colour"></param>
+    void DrawLine(Vector2D p0, Vector2D p1, Colour colour = { 255,255,255 }, bool checkBounds = true)
+    {
+        // Left "leaning" line
+        if (p0.X >= p1.X)
+        {
+            float run = p0.X - p1.X;
+            float rise = p0.Y - p1.Y;
+
+            // If the rise starts getting larger than the run the line starts to break up, 
+            // so we check when that happens and use "inverses" to draw the new line
+            // Instead of y-Intercept we use x-Intercept, and replace x's with y's positions
+            if (std::abs(rise) > std::abs(run))
+            {
+                float slope = run / rise;
+
+                float xIntercept = p0.X - slope * p0.Y;
+
+                if (p0.Y > p1.Y)
+                    std::swap(p0, p1);
+
+                float x = 0;
+
+                for (float y = p0.Y; y < p1.Y; y++)
+                {
+                    x = slope * y + xIntercept;
+
+                    DrawPixel(x, y, colour, checkBounds);
+                };
+            }
+            else
+            {
+                float slope = rise / run;
+
+                float yIntercept = p0.Y - slope * p0.X;
+
+                float y = 0;
+
+                for (float x = p1.X; x < p0.X; x++)
+                {
+                    y = slope * x + yIntercept;
+
+                    DrawPixel(x, y, colour, checkBounds);
+                };
+            };
+        }
+        // Right "leaning" line
+        else
+        {
+            float run = p1.X - p0.X;
+            float rise = p1.Y - p0.Y;
+
+            // If the rise starts getting larger than the run the line starts to break up, 
+            // so we check when that happens and use "inverses" to draw the new line
+            // Instead of y-Intercept we use x-Intercept, and replace x's with y's positions
+            if (std::abs(rise) > std::abs(run))
+            {
+                float slope = run / rise;
+
+                float xIntercept = p0.X - slope * p0.Y;
+
+                if (p0.Y > p1.Y)
+                    std::swap(p0, p1);
+
+                float x = 0;
+
+                for (float y = p0.Y; y < p1.Y; y++)
+                {
+                    x = slope * y + xIntercept;
+
+                    DrawPixel(x, y, colour, checkBounds);
+                };
+            }
+            else
+            {
+                float slope = rise / run;
+
+                float yIntercept = p0.Y - slope * p0.X;
+
+                float y = 0;
+
+                for (float x = p0.X; x < p1.X; x++)
+                {
+                    y = slope * x + yIntercept;
+
+                    DrawPixel(x, y, colour, checkBounds);
+                };
+            };
+        };
+
+    };
+
     
     /// <summary>
     /// Get number of pixels 
