@@ -73,6 +73,15 @@ public:
         return *this;
     };
 
+    Vector2D Scaled(float scalar)
+    {
+        return
+        {
+            X * scalar,
+            Y * scalar,
+        };
+    };
+
 
     void Rotate(float angle)
     {
