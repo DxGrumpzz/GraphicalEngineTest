@@ -99,8 +99,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     graphics->SetupGraphics(window->GetHWND());
 
     scenes.push_back(new GraphScene(*graphics, *window));
-    scenes.push_back(new TestScene(*graphics, *window));
     scenes.push_back(new BitmapScene(*graphics, *window));
+    scenes.push_back(new TestScene(*graphics, *window));
 
     currentScene = scenes.end() - 1;
 
