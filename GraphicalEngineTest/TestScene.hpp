@@ -26,7 +26,7 @@ private:
     int _mapWidth = 10;
     int _mapHeight = 10;
 
-    float _playerFOV = Maths::DegreesToRadians(70);
+    float _playerFOV = Maths::DegreesToRadians(120);
 
     float _maxDepth = 10;
 
@@ -79,13 +79,24 @@ public:
 
         if (_window.GetKeyboard().GetKeyState('W') == KeyState::Held)
         {
-            _playerY += std::sinf(_playerLookAtAngle) * 2.0f * deltaTime;
             _playerX += std::cosf(_playerLookAtAngle) * 2.0f * deltaTime;
+            _playerY += std::sinf(_playerLookAtAngle) * 2.0f * deltaTime;
         }
         else if (_window.GetKeyboard().GetKeyState('S') == KeyState::Held)
         {
-            _playerY -= std::sinf(_playerLookAtAngle) * 2.0f * deltaTime;
             _playerX -= std::cosf(_playerLookAtAngle) * 2.0f * deltaTime;
+            _playerY -= std::sinf(_playerLookAtAngle) * 2.0f * deltaTime;
+        };
+
+        if (_window.GetKeyboard().GetKeyState('A') == KeyState::Held)
+        {
+            _playerX += std::sinf(_playerLookAtAngle) * 2.0f * deltaTime;
+            _playerY -= std::cosf(_playerLookAtAngle) * 2.0f * deltaTime;
+        }
+        else if (_window.GetKeyboard().GetKeyState('D') == KeyState::Held)
+        {
+            _playerX -= std::sinf(_playerLookAtAngle) * 2.0f * deltaTime;
+            _playerY += std::cosf(_playerLookAtAngle) * 2.0f * deltaTime;
         };
 
     };
@@ -97,13 +108,16 @@ public:
         {
             float rayAngle = (_playerLookAtAngle - _playerFOV / 2.0f) + (static_cast<float>(x) / static_cast<float>(_window.GetWindowWidth())) * _playerFOV;
 
+
             float distanceToWall = 0.0f;
 
             bool hitWall = false;
 
+
             float playerEyeX = std::cosf(rayAngle);
             float playerEyeY = std::sinf(rayAngle);
 
+            // Find distance to wall
             while ((hitWall == false) &&
                    distanceToWall < _maxDepth)
             {
@@ -183,7 +197,6 @@ public:
         int miniMapXOffset = 0;
         int miniMapYOffset = 0;
 
-
         int miniMapWidthScale = 10;
         int miniMapHeightScale = 10;
 
@@ -250,9 +263,7 @@ public:
         p1.Y += (angleY * lineLength);
 
         _graphics.DrawLine(p0, p1, Colours::Red, false);
-        _graphics.DrawLine({ p0.X, p0.Y + 1 }, { p1.X, p1.Y + 1 }, Colours::Red, false);
 
-        _graphics.DrawLine({ p0.X + 1, p0.Y }, { p1.X + 1, p1.Y }, Colours::Red, false);
     };
 
 };

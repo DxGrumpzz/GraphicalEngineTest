@@ -1,8 +1,9 @@
 #pragma once
 
 #include <exception>
-#include <math.h>
+#include <cmath>
 
+#include "Maths.hpp"
 
 class Vector2D
 {
@@ -83,10 +84,10 @@ public:
     };
 
 
-    void Rotate(float angle)
+    void Rotate(float radians)
     {
-        float cosResult = cos(angle);
-        float sinResult = sin(angle);
+        float cosResult = std::cosf(radians);
+        float sinResult = std::sinf(radians);
 
         float angledX = X * cosResult - Y * sinResult;
         float angledY = X * sinResult + Y * cosResult;
@@ -97,7 +98,8 @@ public:
 
     void RotateDeg(float degrees)
     {
-        float radians = degrees * 3.14159265f / 180;
+        // float radians = degrees * 3.14159265f / 180;
+        float radians = Maths::DegreesToRadians(degrees);
 
         Rotate(radians);
     };
