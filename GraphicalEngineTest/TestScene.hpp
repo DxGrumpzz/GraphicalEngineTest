@@ -26,7 +26,7 @@ private:
     int _mapWidth = 10;
     int _mapHeight = 10;
 
-    float _playerFOV = Maths::DegreesToRadians(120);
+    float _playerFOV = Maths::DegreesToRadians(90);
 
     float _maxDepth = 10;
 
@@ -123,6 +123,7 @@ public:
             {
                 distanceToWall += 0.1f;
 
+
                 int testX = static_cast<int>(_playerX + playerEyeX * distanceToWall);
                 int testY = static_cast<int>(_playerY + playerEyeY * distanceToWall);
 
@@ -143,30 +144,28 @@ public:
             };
 
 
+            // No idea why or how but this fixes the "fisheye" effect
+            float projectedAngle = (_playerLookAtAngle - rayAngle) * (_playerFOV / 2.0f);
+            distanceToWall *= std::cosf(projectedAngle);
+
+
             int ceiling = static_cast<float>(_window.GetWindowHeight() / 2.0) - _window.GetWindowHeight() / distanceToWall;
             int floor = _window.GetWindowHeight() - ceiling;
 
             // Calculate wall shading based on distance
-            std::uint8_t shade = 0;
-
-            if (distanceToWall <= _maxDepth / 4.0f)
-                shade = 10;
-            else if (distanceToWall < _maxDepth / 3.0f)
-                shade = 22;
-            else if (distanceToWall < _maxDepth / 2.0f)
-                shade = 46;
-            else if (distanceToWall < _maxDepth / 2.0f)
-                shade = 94;
-            else
-                shade = 190;
+            std::uint8_t shade = 255;
+            if (distanceToWall < _maxDepth)
+                shade = _maxDepth * distanceToWall;
 
             // Draw the frame column-by-column
             for (int y = 0; y < _window.GetWindowHeight(); y++)
             {
+                // Draw ceiling
                 if (y < ceiling)
                 {
                     _graphics.DrawPixel(x, y, { 0, 255, 255 });
                 }
+                // Draw walls
                 else if (y > ceiling && y < floor)
                 {
                     Colour colour = Colours::White;
@@ -177,6 +176,7 @@ public:
 
                     _graphics.DrawPixel(x, y, colour);
                 }
+                // Draw floor
                 else
                 {
                     _graphics.DrawPixel(x, y, Colours::Green);
@@ -200,7 +200,7 @@ public:
         int miniMapWidthScale = 10;
         int miniMapHeightScale = 10;
 
-        float lineLength = ((miniMapWidthScale + miniMapHeightScale) / 2) + 5.0f;
+        float lineLength = ((miniMapWidthScale + miniMapHeightScale) / 2);
 
 
         // Draw the _map
@@ -249,20 +249,25 @@ public:
         };
 
 
-        // Calculate x and y position of player view angle
-        float angleX = std::cosf(_playerLookAtAngle);
-        float angleY = std::sinf(_playerLookAtAngle);
-
+        // Draw a cone of vision to the camera's angle
+        float pointToPointDistanceSpacing = 0.50f;
+        float pointsToPlayerDistanceSpacing = 30.f;
 
         // Draw a line starting from the player's position to the view ray's angle
         Vector2D p0(miniMapXOffset + ((_playerX * miniMapWidthScale) + miniMapWidthScale / 2),
                     miniMapYOffset + ((_playerY * miniMapHeightScale) + miniMapWidthScale / 2));
 
         Vector2D p1 = p0;
-        p1.X += (angleX * lineLength);
-        p1.Y += (angleY * lineLength);
+        p1.X += (std::cosf(_playerLookAtAngle + pointToPointDistanceSpacing) * pointsToPlayerDistanceSpacing);
+        p1.Y += (std::sinf(_playerLookAtAngle + pointToPointDistanceSpacing) * pointsToPlayerDistanceSpacing);
+
+        Vector2D p2 = p0;
+        p2.X += (std::cosf(_playerLookAtAngle - pointToPointDistanceSpacing) * pointsToPlayerDistanceSpacing);
+        p2.Y += (std::sinf(_playerLookAtAngle - pointToPointDistanceSpacing) * pointsToPlayerDistanceSpacing);
 
         _graphics.DrawLine(p0, p1, Colours::Red, false);
+        _graphics.DrawLine(p0, p2, Colours::Red, false);
+        _graphics.DrawLine(p1, p2, Colours::Red, false);
 
     };
 

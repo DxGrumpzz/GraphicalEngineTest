@@ -13,8 +13,7 @@
 #include "BitmapScene.hpp"
 #include "GraphScene.hpp"
 #include "TestScene.hpp"
-
-
+#include "LightTestScene.hpp"
 
 int windowWidth = 800;
 int windowHeight = 500;
@@ -100,8 +99,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
     scenes.push_back(new GraphScene(*graphics, *window));
     scenes.push_back(new BitmapScene(*graphics, *window));
+    scenes.push_back(new LightTestScene(*graphics, *window));
     scenes.push_back(new TestScene(*graphics, *window));
-
+    
     currentScene = scenes.end() - 1;
 
     // Show the window
