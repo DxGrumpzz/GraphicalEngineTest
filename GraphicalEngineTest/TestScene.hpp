@@ -111,6 +111,8 @@ public:
 
             float distanceToWall = 0.0f;
 
+            const float steps = 0.01;
+
             bool hitWall = false;
 
 
@@ -121,7 +123,7 @@ public:
             while ((hitWall == false) &&
                    distanceToWall < _maxDepth)
             {
-                distanceToWall += 0.1f;
+                distanceToWall += steps;
 
 
                 int testX = static_cast<int>(_playerX + playerEyeX * distanceToWall);
