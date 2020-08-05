@@ -256,8 +256,8 @@ private:
         RegisterClassExW(&windowClass);
 
         RECT windowRect;
-        windowRect.top = 50;
-        windowRect.left = 50;
+        windowRect.top = 100;
+        windowRect.left = 75;
 
         windowRect.bottom = _windowHeight + windowRect.top;
         windowRect.right = _windowWidth + windowRect.left;
