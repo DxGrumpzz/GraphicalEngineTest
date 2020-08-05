@@ -64,9 +64,18 @@ public:
 
 public:
 
+    bool cursorConfined = false;
+
 
     virtual void UpdateScene(float deltaTime) override
     {
+        if (_window.GetKeyboard().GetKeyState(VK_RETURN) == KeyState::Pressed)
+        {
+            cursorConfined = !cursorConfined;
+            _window.ConfineMouse(cursorConfined);
+        };
+
+
         if (_window.GetKeyboard().GetKeyState(VK_LEFT) == KeyState::Held)
         {
             _playerLookAtAngle -= 1.5 * deltaTime;
@@ -98,7 +107,6 @@ public:
             _playerX -= std::sinf(_playerLookAtAngle) * 2.0f * deltaTime;
             _playerY += std::cosf(_playerLookAtAngle) * 2.0f * deltaTime;
         };
-
     };
 
 

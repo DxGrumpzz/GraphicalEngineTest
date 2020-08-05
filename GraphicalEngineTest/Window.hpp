@@ -54,6 +54,11 @@ private:
 
     Keyboard  _keyboard;
 
+    /// <summary>
+    /// A boolean flag that indicates if the mouse is currently being confined to the window
+    /// </summary>
+    bool _mouseConfined = false;
+
 public:
 
     Window(int windowWidth, int windowHeight,
@@ -77,6 +82,7 @@ public:
         UnregisterClassW(_windowClassName.c_str(), _hInstance);
     };
 
+
 public:
 
     /// <summary>
@@ -86,6 +92,7 @@ public:
     {
         ::ShowWindow(_hwnd, SW_SHOW);
     };
+
 
     /// <summary>
     /// Processes messages in window message buffer. Returns true after all messages were handled, 
@@ -117,8 +124,45 @@ public:
         HandleMouseEvents();
         HandleKeyboardEvents();
 
+
+        // Confine the mouse is requested
+        if (_mouseConfined == true)
+        {
+            // only confine the mouse if the window is focused
+            if (WindowFocused() == true)
+            {
+                // A clipping area that the mouse will be confined to 
+                RECT clipRect;
+
+                // Get a RECT for the window's client area.
+                // But there's a problem, GetClientRect returns a RECT relative to to screen
+                GetClientRect(GetHWND(), &clipRect);
+                // So we use this function to map the points inside clipRect to the actual window's client area
+                MapWindowPoints(GetHWND(), nullptr, reinterpret_cast<POINT*>(&clipRect), 2);
+
+                // Confine the cursor
+                ClipCursor(&clipRect);
+            };
+        }
+        else
+        {
+            // Release confinment
+            ClipCursor(nullptr);
+        };
+
         return true;
     };
+
+
+    /// <summary>
+    /// Confines the cursor to the window's client area
+    /// </summary>
+    /// <param name="confine"></param>
+    void ConfineMouse(bool confine)
+    {
+        _mouseConfined = confine;
+    };
+
 
 public:
 
@@ -131,6 +175,7 @@ public:
     {
         return { static_cast<float>(_mouse.X), static_cast<float>(_mouse.Y) };
     };
+    
 
     int GetWindowWidth() const
     {
@@ -142,6 +187,7 @@ public:
         return _windowHeight;
     };
 
+
     const Mouse& GetMouse()
     {
         return _mouse;
@@ -152,6 +198,14 @@ public:
         return _keyboard;
     };
 
+    /// <summary>
+    /// Returns true if the window is currently focused
+    /// </summary>
+    /// <returns></returns>
+    bool WindowFocused()
+    {
+        return (GetFocus() == GetHWND());
+    };
 
 private:
 
@@ -227,6 +281,12 @@ private:
             {
                 PostQuitMessage(0);
                 return 0;
+            };
+
+            case WM_DESTROY:
+            {
+                // Free cursor confinement, if necessary
+                ClipCursor(nullptr);
             };
         };
 
