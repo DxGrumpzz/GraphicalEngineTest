@@ -73,7 +73,9 @@ public:
         {
             cursorConfined = !cursorConfined;
             _window.ConfineMouse(cursorConfined);
+            _window.HideMouse(cursorConfined);
         };
+
 
 
         if (_window.GetKeyboard().GetKeyState(VK_LEFT) == KeyState::Held)

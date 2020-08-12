@@ -59,6 +59,11 @@ private:
     /// </summary>
     bool _mouseConfined = false;
 
+    /// <summary>
+    /// A boolean flag that indicates if the cursor is currently hidden
+    /// </summary>
+    bool _mouseHidden = false;
+
 public:
 
     Window(int windowWidth, int windowHeight,
@@ -150,6 +155,20 @@ public:
             ClipCursor(nullptr);
         };
 
+
+        // Hide the cursor if requested
+        if (_mouseHidden == true)
+        {
+            // Somewhere deep in windows cursor holds a counter for it's visibility state
+            // When we call functions like 'ShowCursor' we need to decrement or increment 
+            // until cursor is hidden or visible
+            while (ShowCursor(false) >= 0);
+        }
+        else
+        {
+            while (ShowCursor(true) < 0);
+        };
+
         return true;
     };
 
@@ -161,6 +180,15 @@ public:
     void ConfineMouse(bool confine)
     {
         _mouseConfined = confine;
+    };
+
+    /// <summary>
+    /// Hides the cursor
+    /// </summary>
+    /// <param name="hide"></param>
+    void HideMouse(bool hide)
+    {
+        _mouseHidden = hide;
     };
 
 
