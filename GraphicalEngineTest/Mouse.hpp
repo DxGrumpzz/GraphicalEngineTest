@@ -20,6 +20,9 @@ private:
     /// </summary>
     bool _insideWindow;
 
+    /// <summary>
+    /// A list containing event handles for raw mouse moved event
+    /// </summary>
     std::vector<std::function<void(int, int)>> _rawMouseMovedHandlers;
 
 public:
@@ -51,17 +54,28 @@ public:
     };
 
 
+    /// <summary>
+    /// Adds a new raw mouse moved event handler 
+    /// </summary>
+    /// <param name="MouseRawMoved"></param>
     void AddRawMouseMovedHandler(std::function<void(int, int)> MouseRawMoved)
     {
         _rawMouseMovedHandlers.push_back(MouseRawMoved);
     };
 
+    /// <summary>
+    /// Remove an existing raw mouse moved event handler
+    /// </summary>
+    /// <param name="MouseRawMoved"></param>
     void RemoveRawMouseMovedHandler(std::function<void(int, int)> MouseRawMoved)
     {
+        // Find the appropriate event handler
         std::vector<std::function<void(int, int)>>::iterator position =
             std::find_if(_rawMouseMovedHandlers.begin(), _rawMouseMovedHandlers.end(),
                          [MouseRawMoved](std::function<void(int, int)> func)
                          {
+                             // Because std::function doesn't overload the '==' operator 
+                             // I have to compare the actual function *Pointers
                              auto funcTarget = func.target<void(int, int)>();
                              auto handlerTarget = func.target<void(int, int)>();
 
@@ -71,18 +85,25 @@ public:
                              return false;
                          });
 
+        // If handler exists
         if (position != _rawMouseMovedHandlers.end())
+            // Remove it from the list
             _rawMouseMovedHandlers.erase(position);
     };
 
 
 private:
 
-    void OnMouseRawMoved(int x, int y)
+    /// <summary>
+    /// A function that will be called when the main window recevied a raw mouse input
+    /// </summary>
+    /// <param name="lastX"> </param>
+    /// <param name="lastY"> </param>
+    void OnMouseRawMoved(int lastX, int lastY)
     {
         for (const std::function<void(int, int)>& func : _rawMouseMovedHandlers)
         {
-            func(x, y);
+            func(lastX, lastY);
         };
 
     };

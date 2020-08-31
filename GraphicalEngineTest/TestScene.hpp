@@ -63,12 +63,11 @@ public:
 
     };
 
-                              ~TestScene()
-                              {
-                                  delete[] _map;
-                                  _map = nullptr;
-                              };
-
+    ~TestScene()
+    {
+        delete[] _map;
+        _map = nullptr;
+    };
 
 public:
 

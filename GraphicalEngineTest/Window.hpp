@@ -237,15 +237,24 @@ public:
     };
 
 
+    /// <summary>
+    /// Add an event handler that will be called when the physical mouse moves
+    /// </summary>
+    /// <param name="MouseRawMoved"> Function handler </param>
     void AddRawMouseMovedHandler(std::function<void(int, int)> MouseRawMoved)
     {
         _mouse.AddRawMouseMovedHandler(MouseRawMoved);
     };
 
+    /// <summary>
+    /// Remove a handler
+    /// </summary>
+    /// <param name="MouseRawMoved"></param>
     void RemoveRawMouseMovedHandler(std::function<void(int, int)> MouseRawMoved)
     {
         _mouse.AddRawMouseMovedHandler(MouseRawMoved);
     };
+
 
 private:
 
@@ -286,26 +295,28 @@ private:
 
             case WM_INPUT:
             {
-                std::uint32_t size = 0;
-                GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, NULL, &size, sizeof(RAWINPUTHEADER));
+                // No idea why, but this call 'GetRawInputData' must be called twice to work properly. Even accoring to Microsoft
+                std::uint32_t rawInputSize = 0;
+                GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, nullptr, &rawInputSize, sizeof(RAWINPUTHEADER));
+                
+                // Raw input struct, contains data about a registerd raw device(s)
+                RAWINPUT rawInput { 0 };
 
-                std::uint8_t* bytes = new uint8_t[size];
-
-                GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, bytes, &size, sizeof(RAWINPUTHEADER));
-
-                RAWINPUT& rawInput = *reinterpret_cast<RAWINPUT*>(bytes);
-
-
+                // Get raw input device data
+                if(GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, &rawInput, &rawInputSize, sizeof(RAWINPUTHEADER)) != rawInputSize)
+                {
+                    std::wstring error = WindowsUtilities::GetLastErrorAsStringW();
+                    DebugBreak();
+                };
+           
+                // Handle raw mouse input
                 if (rawInput.header.dwType == RIM_TYPEMOUSE)
                 {
-                    RAWMOUSE mouse = rawInput.data.mouse;
-                  
-                    _mouse.OnMouseRawMoved(mouse.lLastX, mouse.lLastY);
+                    RAWMOUSE rawMouse = rawInput.data.mouse;
+                    
+                    // Invoke raw mouse moved event
+                    _mouse.OnMouseRawMoved(rawMouse.lLastX, rawMouse.lLastY);
                 };
-
-
-                delete[] bytes;
-                bytes = nullptr;
 
                 return 0;
             };
@@ -408,16 +419,8 @@ private:
                                 _hInstance,
                                 nullptr);
 
-        RAWINPUTDEVICE rawInputDevice { 0 };
-        rawInputDevice.usUsagePage = HID_USAGE_PAGE_GENERIC;
-        rawInputDevice.usUsage = HID_USAGE_GENERIC_MOUSE;
-        rawInputDevice.hwndTarget = _hwnd;
-
-        if (!RegisterRawInputDevices(&rawInputDevice, 1, sizeof(rawInputDevice)))
-        {
-            std::wstring error = WindowsUtilities::GetLastErrorAsStringW();
-            DebugBreak();
-        };
+        // Register raw input devices
+        RegisterDevices();
 
         // Set window user data to point to this class instance
         SetWindowLongPtrW(_hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
@@ -516,6 +519,11 @@ private:
     };
 
 
+    void RegisterDevices()
+    {
+        RegisterRawMouse();
+    };
+
     /// <summary>
     /// A window message dispatcher, the only purpose of this function is to dispatch window messages to the instanced WinProc in this class
     /// </summary>
@@ -531,4 +539,26 @@ private:
         return windowPointer->WindowProcedure(hwnd, msg, wParam, lParam);
     };
 
+    /// <summary>
+    /// Registers the physical mouse as a RawDevice
+    /// </summary>
+    void RegisterRawMouse()
+    {
+        // The input device to register
+        RAWINPUTDEVICE rawInputDevice { 0 };
+
+        // Register the mouse as a raw device
+        rawInputDevice.usUsagePage = HID_USAGE_PAGE_GENERIC;
+        rawInputDevice.usUsage = HID_USAGE_GENERIC_MOUSE;
+
+        // Target current window
+        rawInputDevice.hwndTarget = _hwnd;
+
+        // Actually register the mouse
+        if (!RegisterRawInputDevices(&rawInputDevice, 1, sizeof(rawInputDevice)))
+        {
+            std::wstring error = WindowsUtilities::GetLastErrorAsStringW();
+            DebugBreak();
+        };
+    };
 };
