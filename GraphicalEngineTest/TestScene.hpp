@@ -32,13 +32,18 @@ private:
 
     bool* _map;
 
+    std::function<void(int, int)> _rawMouseMovedHandler;
 
 public:
 
     TestScene(Graphics& graphics, Window& window) :
         _graphics(graphics),
-        _window(window)
+        _window(window),
+        _rawMouseMovedHandler([this](int x,int y) { MouseRawMoved(x, y); })
     {
+
+        _window.AddRawMouseMovedHandler(_rawMouseMovedHandler);
+
         _map = new bool[_mapWidth * _mapHeight]
         {
             1,1,1,1,1,1,1,1,1,1,
@@ -65,10 +70,17 @@ public:
 public:
 
     bool cursorConfined = false;
+    float _deltaTime;
+
+    void MouseRawMoved(int x, int y)
+    {
+        _playerLookAtAngle -= (x * 0.004);
+    };
 
 
     virtual void UpdateScene(float deltaTime) override
     {
+        _deltaTime = deltaTime;
         if (_window.GetKeyboard().GetKeyState(VK_RETURN) == KeyState::Pressed)
         {
             cursorConfined = !cursorConfined;

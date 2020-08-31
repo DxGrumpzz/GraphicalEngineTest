@@ -203,7 +203,7 @@ public:
     {
         return { static_cast<float>(_mouse.X), static_cast<float>(_mouse.Y) };
     };
-    
+
 
     int GetWindowWidth() const
     {
@@ -235,6 +235,17 @@ public:
         return (GetFocus() == GetHWND());
     };
 
+
+    void AddRawMouseMovedHandler(std::function<void(int, int)> MouseRawMoved)
+    {
+        _mouse.AddRawMouseMovedHandler(MouseRawMoved);
+    };
+
+    void RemoveRawMouseMovedHandler(std::function<void(int, int)> MouseRawMoved)
+    {
+        _mouse.AddRawMouseMovedHandler(MouseRawMoved);
+    };
+
 private:
 
 
@@ -253,9 +264,18 @@ private:
 
             case WM_MOUSEMOVE:
             {
+                //_mouse.MouseRawMoved2(_mouse.X - GET_X_LPARAM(lParam), _mouse.Y - GET_Y_LPARAM(lParam));
+                //_mouse.MouseRawMoved(_mouse.X - GET_X_LPARAM(lParam), _mouse.Y - GET_Y_LPARAM(lParam));
+
+                if (_keyboard.GetKeyState(VK_SPACE) == KeyState::Held)
+                {
+                    _mouse.OnMouseRawMoved(_mouse.X - GET_X_LPARAM(lParam), _mouse.Y - GET_Y_LPARAM(lParam));
+                };
+
                 // Get mouse X and X positions
                 _mouse.X = GET_X_LPARAM(lParam);
                 _mouse.Y = GET_Y_LPARAM(lParam);
+
 
                 _mouse._insideWindow = true;
 
