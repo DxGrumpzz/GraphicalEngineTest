@@ -39,7 +39,10 @@ public:
     TestScene(Graphics& graphics, Window& window) :
         _graphics(graphics),
         _window(window),
-        _rawMouseMovedHandler([this](int x,int y) { MouseRawMoved(x, y); })
+        _rawMouseMovedHandler([this](int x, int y)
+                              {
+                                  MouseRawMoved(x, y);
+                              })
     {
 
         _window.AddRawMouseMovedHandler(_rawMouseMovedHandler);
@@ -60,11 +63,11 @@ public:
 
     };
 
-    ~TestScene()
-    {
-        delete[] _map;
-        _map = nullptr;
-    };
+                              ~TestScene()
+                              {
+                                  delete[] _map;
+                                  _map = nullptr;
+                              };
 
 
 public:
@@ -74,14 +77,18 @@ public:
 
     void MouseRawMoved(int x, int y)
     {
-        _playerLookAtAngle -= (x * 0.004);
+        if (cursorConfined == true)
+        {
+            _playerLookAtAngle += (x * _deltaTime) * 0.05;
+        };
     };
 
 
     virtual void UpdateScene(float deltaTime) override
     {
         _deltaTime = deltaTime;
-        if (_window.GetKeyboard().GetKeyState(VK_RETURN) == KeyState::Pressed)
+        if ((_window.GetKeyboard().GetKeyState(VK_RETURN) == KeyState::Pressed) ||
+            (_window.GetKeyboard().GetKeyState(VK_ESCAPE) == KeyState::Pressed))
         {
             cursorConfined = !cursorConfined;
             _window.ConfineMouse(cursorConfined);

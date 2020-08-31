@@ -3,6 +3,7 @@
 #include <windowsx.h>
 #include <string>
 #include <bitset>
+#include <hidusage.h>
 
 #include "Mouse.hpp"
 #include "Vector2D.hpp"
@@ -264,14 +265,6 @@ private:
 
             case WM_MOUSEMOVE:
             {
-                //_mouse.MouseRawMoved2(_mouse.X - GET_X_LPARAM(lParam), _mouse.Y - GET_Y_LPARAM(lParam));
-                //_mouse.MouseRawMoved(_mouse.X - GET_X_LPARAM(lParam), _mouse.Y - GET_Y_LPARAM(lParam));
-
-                if (_keyboard.GetKeyState(VK_SPACE) == KeyState::Held)
-                {
-                    _mouse.OnMouseRawMoved(_mouse.X - GET_X_LPARAM(lParam), _mouse.Y - GET_Y_LPARAM(lParam));
-                };
-
                 // Get mouse X and X positions
                 _mouse.X = GET_X_LPARAM(lParam);
                 _mouse.Y = GET_Y_LPARAM(lParam);
@@ -291,6 +284,31 @@ private:
                 return 0;
             };
 
+            case WM_INPUT:
+            {
+                std::uint32_t size = 0;
+                GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, NULL, &size, sizeof(RAWINPUTHEADER));
+
+                std::uint8_t* bytes = new uint8_t[size];
+
+                GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, bytes, &size, sizeof(RAWINPUTHEADER));
+
+                RAWINPUT& rawInput = *reinterpret_cast<RAWINPUT*>(bytes);
+
+
+                if (rawInput.header.dwType == RIM_TYPEMOUSE)
+                {
+                    RAWMOUSE mouse = rawInput.data.mouse;
+                  
+                    _mouse.OnMouseRawMoved(mouse.lLastX, mouse.lLastY);
+                };
+
+
+                delete[] bytes;
+                bytes = nullptr;
+
+                return 0;
+            };
 
             case WM_MOUSELEAVE:
             {
@@ -389,6 +407,17 @@ private:
                                 nullptr,
                                 _hInstance,
                                 nullptr);
+
+        RAWINPUTDEVICE rawInputDevice { 0 };
+        rawInputDevice.usUsagePage = HID_USAGE_PAGE_GENERIC;
+        rawInputDevice.usUsage = HID_USAGE_GENERIC_MOUSE;
+        rawInputDevice.hwndTarget = _hwnd;
+
+        if (!RegisterRawInputDevices(&rawInputDevice, 1, sizeof(rawInputDevice)))
+        {
+            std::wstring error = WindowsUtilities::GetLastErrorAsStringW();
+            DebugBreak();
+        };
 
         // Set window user data to point to this class instance
         SetWindowLongPtrW(_hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));

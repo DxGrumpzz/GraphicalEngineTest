@@ -29,8 +29,12 @@ namespace WindowsUtilities
     };
 
 
-    // Takes a DWORD error code and returns its string message 
-    std::wstring GetLastErrorAsStringW(DWORD error)
+    /// <summary>
+    /// Takes a DWORD error code and returns its string message  
+    /// </summary>
+    /// <param name="error"></param>
+    /// <returns></returns>
+    std::wstring ErrorToStringW(DWORD error)
     {
         // Stores the error message as a string in memory
         LPWSTR buffer = nullptr;
@@ -46,5 +50,13 @@ namespace WindowsUtilities
         return buffer;
     };
 
+    /// <summary>
+    /// Returns the last windows error as a wide string
+    /// </summary>
+    /// <returns></returns>
+    std::wstring GetLastErrorAsStringW()
+    {
+        return ErrorToStringW(GetLastError());
+    };
 
 };
