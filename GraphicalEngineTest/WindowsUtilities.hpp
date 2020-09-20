@@ -59,4 +59,32 @@ namespace WindowsUtilities
         return ErrorToStringW(GetLastError());
     };
 
+
+    /// <summary>
+    /// A function that displays a MessageBox with some error details
+    /// </summary>
+    /// <param name="error"> The error to display </param>
+    /// <param name="title"> The error title </param>
+    /// <param name="line"> Current line number, ideally do not pass a value here </param>
+    /// <param name="file"> Current file, ideally do not pass a value here</param>
+    void ShowWinErrorW(const std::wstring& error, const std::wstring& title = L"WinError", 
+                      std::intmax_t line = __LINE__, const wchar_t* file = __FILEW__)
+    {
+        // Create a digestable error message
+        std::wstring outputError;
+        outputError.reserve(256);
+
+        outputError.append(L"An error occured in ")
+            .append(file)
+            .append(L"\n")
+            .append(L"Line: ")
+            .append(std::to_wstring(line))
+            .append(L"\n")
+            .append(L"Error:\n")
+            .append(error);
+
+        MessageBoxW(NULL, outputError.c_str(), title.c_str(), MB_ICONERROR);
+
+    };
+
 };
