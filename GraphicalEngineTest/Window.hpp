@@ -364,6 +364,12 @@ private:
             {
                 // Free cursor confinement, if necessary
                 ClipCursor(nullptr);
+                return true;
+            };
+
+            case WM_SETCURSOR:
+            {
+                return true;
             };
         };
 
