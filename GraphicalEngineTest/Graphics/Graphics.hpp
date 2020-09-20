@@ -310,7 +310,7 @@ public:
     {
         // Bounds check
         if ((x > _windowWidth || x < 0) || 
-            (y > _windowWidth || y < 0))
+            (y > _windowHeight || y < 0))
         {
             WindowsUtilities::ShowWinErrorW(L"Error. GetPixel() tried to access out of bounds memory");
             DebugBreak();
