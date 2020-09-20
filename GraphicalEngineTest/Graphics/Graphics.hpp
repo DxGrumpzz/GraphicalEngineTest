@@ -306,8 +306,16 @@ public:
     /// Get a pixel based on x and y position
     /// </summary>
     /// <returns></returns>
-    Colour& GetPixel(std::size_t x, std::size_t y)
+    Colour& GetPixel(int x, int y)
     {
+        // Bounds check
+        if ((x > _windowWidth || x < 0) || 
+            (y > _windowWidth || y < 0))
+        {
+            WindowsUtilities::ShowWinErrorW(L"Error. GetPixel() tried to access out of bounds memory");
+            DebugBreak();
+        };
+
         size_t pixelDataIndexer = x + _windowWidth * y;
 
         Colour& pixel = _pixelData[pixelDataIndexer];
@@ -491,7 +499,7 @@ private:
         swapChainDescriptor.SampleDesc.Quality = 0;
 
         swapChainDescriptor.OutputWindow = hwnd;
-
+        
         // Create D3D device and swap chain
         WindowsUtilities::COM_CALL(D3D11CreateDeviceAndSwapChain(adapter.Get(),
                                    // Setting to unkwon type because we give it an IAdapter
