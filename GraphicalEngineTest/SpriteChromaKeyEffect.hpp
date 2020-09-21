@@ -28,8 +28,8 @@ public:
 
 public:
 
-    virtual Colour& ApplyEffect(std::size_t screenX, std::size_t screenY,
-                                std::size_t spritePixelX, std::size_t spritePixelY,
+    virtual Colour& ApplyEffect(int screenX, int screenY,
+                                int spritePixelX, int spritePixelY,
                                 Colour& pixel) override
     {
         Colour spritePixel = _sprite.GetPixel(spritePixelX, spritePixelY);

@@ -18,7 +18,6 @@
 int windowWidth = 800;
 int windowHeight = 500;
 
-Graphics* graphics = new Graphics(windowWidth, windowHeight);
 Window* window = nullptr;
 
 
@@ -93,6 +92,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
                         hInstance,
                         windowClassName,
                         windowTitle);
+
+    Graphics* graphics = new Graphics(windowWidth, windowHeight);
 
     // Setup graphics components
     graphics->SetupGraphics(window->GetHWND());

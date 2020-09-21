@@ -24,12 +24,12 @@ public:
     /// <summary>
     /// Width of the sprite
     /// </summary>
-    unsigned int Width = 0;
+    int Width = 0;
 
     /// <summary>
     /// Sprite height
     /// </summary>
-    unsigned int Height = 0;
+    int Height = 0;
 
     /// <summary>
     /// The sprite's pixels
@@ -166,9 +166,9 @@ public:
     void DrawSprite(int x, int y, std::vector<ISpriteEffect*> effects = { })
     {
         // Iterate through the entirety of the sprite's pixels
-        for (size_t spriteX = 0; spriteX < Width; spriteX++)
+        for (int spriteX = 0; spriteX < Width; spriteX++)
         {
-            for (size_t spriteY = 0; spriteY < Height; spriteY++)
+            for (int spriteY = 0; spriteY < Height; spriteY++)
             {
                 Colour spritePixel = GetPixel(spriteX, spriteY);
 
@@ -289,10 +289,10 @@ public:
                     Colour spritePixel = GetPixel(static_cast<std::size_t>(spriteX + x0), static_cast<std::size_t>(spriteY + y0));
 
 
-                    ApplyEffects(static_cast<std::size_t>(x + (spriteX * horizontalScale)),
-                                 static_cast<std::size_t>(y + (spriteY * verticalScale)),
-                                 static_cast<std::size_t>(spriteX + x0),
-                                 static_cast<std::size_t>(spriteY + y0),
+                    ApplyEffects(x + (spriteX * horizontalScale),
+                                 y + (spriteY * verticalScale),
+                                 spriteX + x0,
+                                 spriteY + y0,
                                  spritePixel,
                                  effects);
 
@@ -340,8 +340,8 @@ private:
     /// <param name="spriteY"> Position of the sprite's pixel in the Y axis</param>
     /// <param name="spritePixel"> The pixel to affect </param>
     /// <param name="effects"> The list of effects </param>
-    void ApplyEffects(std::size_t screenX, std::size_t screenY,
-                      std::size_t spriteX, std::size_t spriteY,
+    void ApplyEffects(int screenX, int screenY,
+                      int spriteX, int spriteY,
                       Colour& spritePixel,
                       const std::vector<ISpriteEffect*>& effects)
     {
