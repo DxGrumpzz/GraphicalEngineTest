@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <cmath>
 #include <random>
@@ -9,7 +9,7 @@
 #include "Maths.hpp"
 
 
-class TestScene : public IScene
+class RayCasterScene : public IScene
 {
 
 private:
@@ -36,13 +36,13 @@ private:
 
 public:
 
-    TestScene(Graphics& graphics, Window& window) :
+    RayCasterScene(Graphics& graphics, Window& window) :
         _graphics(graphics),
         _window(window),
         _rawMouseMovedHandler([this](int x, int y)
                               {
                                   MouseRawMoved(x, y);
-                              })
+                              }),
     {
 
         _window.AddRawMouseMovedHandler(_rawMouseMovedHandler);
@@ -63,7 +63,7 @@ public:
 
     };
 
-    ~TestScene()
+    ~RayCasterScene()
     {
         delete[] _map;
         _map = nullptr;
@@ -72,13 +72,13 @@ public:
 public:
 
     bool cursorConfined = false;
-    float _deltaTime;
+    float _deltaTime = 0.0;
 
     void MouseRawMoved(int x, int y)
     {
         if (cursorConfined == true)
         {
-            _playerLookAtAngle += (x * _deltaTime) * 0.05;
+            _playerLookAtAngle += (x * _deltaTime) * 0.5f;
         };
     };
 
@@ -98,11 +98,11 @@ public:
 
         if (_window.GetKeyboard().GetKeyState(VK_LEFT) == KeyState::Held)
         {
-            _playerLookAtAngle -= 1.5 * deltaTime;
+            _playerLookAtAngle -= 1.5f * deltaTime;
         }
         else if (_window.GetKeyboard().GetKeyState(VK_RIGHT) == KeyState::Held)
         {
-            _playerLookAtAngle += 1.5 * deltaTime;
+            _playerLookAtAngle += 1.5f * deltaTime;
         };
 
 
@@ -134,18 +134,18 @@ public:
     {
         for (int x = 0; x < _window.GetWindowWidth(); x++)
         {
-            float rayAngle = (_playerLookAtAngle - _playerFOV / 2.0f) + (static_cast<float>(x) / static_cast<float>(_window.GetWindowWidth())) * _playerFOV;
+            const float rayAngle = (_playerLookAtAngle - _playerFOV / 2.0f) + (static_cast<float>(x) / static_cast<float>(_window.GetWindowWidth())) * _playerFOV;
 
 
             float distanceToWall = 0.0f;
 
-            const float steps = 0.01;
+            const float steps = 0.01f;
 
             bool hitWall = false;
 
 
-            float playerEyeX = std::cosf(rayAngle);
-            float playerEyeY = std::sinf(rayAngle);
+            const float playerEyeX = std::cosf(rayAngle);
+            const float playerEyeY = std::sinf(rayAngle);
 
             // Find distance to wall
             while ((hitWall == false) &&
@@ -175,15 +175,15 @@ public:
 
 
             // No idea why or how but this fixes the "fisheye" effect
-            float projectedAngle = (_playerLookAtAngle - rayAngle) * (_playerFOV / 2.0f);
+            const float projectedAngle = (_playerLookAtAngle - rayAngle) * (_playerFOV / 2.0f);
             distanceToWall *= std::cosf(projectedAngle);
 
 
-            int ceiling = static_cast<float>(_window.GetWindowHeight() / 2.0) - _window.GetWindowHeight() / distanceToWall;
-            int floor = _window.GetWindowHeight() - ceiling;
+            const int ceiling = static_cast<float>(_window.GetWindowHeight() / 2.0) - _window.GetWindowHeight() / distanceToWall;
+            const int floor = _window.GetWindowHeight() - ceiling;
 
             // Calculate wall shading based on distance
-            std::uint8_t shade = 255;
+            std::uint8_t shade = 0;
             if (distanceToWall < _maxDepth)
                 shade = _maxDepth * distanceToWall;
 
@@ -252,7 +252,7 @@ public:
                 int mapBlockX = a % _mapWidth;
                 int mapBlockY = a / _mapWidth;
 
-
+                
                 for (std::uint64_t y = 0; y < miniMapHeightScale; y++)
                 {
                     for (std::uint64_t x = 0; x < miniMapWidthScale; x++)

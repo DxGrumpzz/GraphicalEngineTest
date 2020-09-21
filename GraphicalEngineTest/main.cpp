@@ -12,7 +12,7 @@
 
 #include "BitmapScene.hpp"
 #include "GraphScene.hpp"
-#include "TestScene.hpp"
+#include "RayCasterScene.hpp"
 #include "LightTestScene.hpp"
 
 int windowWidth = 800;
