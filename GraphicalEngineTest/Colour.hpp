@@ -52,8 +52,13 @@ namespace Colours
     const Colour Blue = { 0, 0, 255 };
 
 
+    const Colour Cyan = { 0, 255, 255 };
+
+    const Colour Yellow = { 255, 255, 0 };
+
     const Colour Black = { 0, 0, 0 };
 
+    const Colour Magenta = { 255, 0, 255 };
 
     const Colour White = { 255, 255, 255 };
 
