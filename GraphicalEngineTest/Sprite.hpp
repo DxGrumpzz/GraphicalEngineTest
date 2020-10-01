@@ -319,15 +319,27 @@ public:
 
 public:
 
-    Colour& GetPixel(std::size_t x, std::size_t y) const
+    Colour& GetPixel(int x, int y) const
     {
-        size_t pixelDataIndexer = x + Width * y;
+        int pixelDataIndexer = Maths::Convert2DTo1D(x, y, Width);
 
-        Colour& pixel = Pixels[pixelDataIndexer];
+        Colour& pixel = GetPixel(pixelDataIndexer);
 
         return pixel;
     };
 
+    Colour& GetPixel(int index) const
+    {
+        if (index < 0 || index > Width * Height)
+        {
+            DebugBreak();
+            throw std::exception("Index is out of range");
+        };
+
+        Colour& pixel = Pixels[index];
+
+        return pixel;
+    };
 
 private:
 
