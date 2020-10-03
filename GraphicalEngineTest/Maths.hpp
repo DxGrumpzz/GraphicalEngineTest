@@ -27,4 +27,18 @@ namespace Maths
         return index;
     };
 
-}
+
+    /// <summary>
+    /// Normalizes a given value
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="min"></param>
+    /// <param name="max"></param>
+    /// <returns></returns>
+    float Normalize(int value, int min, int max)
+    {
+        float normalized = (static_cast<float>(value) - static_cast<float>(min)) / (static_cast<float>(max) - static_cast<float>(min));
+
+        return normalized;
+    };
+
