@@ -217,7 +217,12 @@ public:
     };
 
 
-    const Mouse& GetMouse()
+    const Mouse& GetMouseConst()
+    {
+        return GetMouse();
+    };
+    
+    Mouse& GetMouse()
     {
         return _mouse;
     };
@@ -271,7 +276,6 @@ private:
     {
         switch (msg)
         {
-
             case WM_MOUSEMOVE:
             {
                 // Get mouse X and X positions
@@ -371,6 +375,15 @@ private:
             {
                 return true;
             };
+
+            case WM_MOUSEWHEEL:
+            {
+                const int mouseWheelDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+
+                _mouse._mouseWheenEvent(mouseWheelDelta);
+                return 0;
+            };
+
         };
 
         return DefWindowProcW(hwnd, msg, wParam, lParam);

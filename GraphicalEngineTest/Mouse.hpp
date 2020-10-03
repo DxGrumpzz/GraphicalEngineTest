@@ -2,6 +2,7 @@
 #include <cstddef>
 #include <functional>
 
+#include "Event.hpp"
 #include "KeyState.hpp"
 
 
@@ -24,6 +25,11 @@ private:
     /// A list containing event handles for raw mouse moved event
     /// </summary>
     std::vector<std::function<void(int, int)>> _rawMouseMovedHandlers;
+
+    /// <summary>
+    /// A mouse wheel event. When execute gives a delta of the mouse wheel's spin
+    /// </summary>
+    Event<int> _mouseWheenEvent;
 
 public:
 
@@ -48,11 +54,25 @@ public:
     KeyState RightMouseButton;
 
 
-    bool InsideWindow()
+public:
+
+    Mouse() :
+        _insideWindow(false),
+        X(0),
+        Y(0),
+        LeftMouseButton(KeyState::None),
+        RightMouseButton(KeyState::None)
+    {
+
+    };
+
+
+public:
+
+    bool InsideWindow() const
     {
         return _insideWindow;
     };
-
 
     /// <summary>
     /// Adds a new raw mouse moved event handler 
@@ -73,22 +93,33 @@ public:
         std::vector<std::function<void(int, int)>>::iterator position =
             std::find_if(_rawMouseMovedHandlers.begin(), _rawMouseMovedHandlers.end(),
                          [MouseRawMoved](std::function<void(int, int)> func)
-                         {
-                             // Because std::function doesn't overload the '==' operator 
-                             // I have to compare the actual function *Pointers
-                             auto funcTarget = func.target<void(int, int)>();
-                             auto handlerTarget = func.target<void(int, int)>();
+        {
+            // Because std::function doesn't overload the '==' operator 
+            // I have to compare the actual function *Pointers
+            auto funcTarget = func.target<void(int, int)>();
+            auto handlerTarget = func.target<void(int, int)>();
 
-                             if (funcTarget == handlerTarget)
-                                 return true;
+            if (funcTarget == handlerTarget)
+                return true;
 
-                             return false;
-                         });
+            return false;
+        });
 
         // If handler exists
         if (position != _rawMouseMovedHandlers.end())
             // Remove it from the list
             _rawMouseMovedHandlers.erase(position);
+    };
+
+
+    void AddMouseWheenEventHandler(const std::function<void(int)>& callback)
+    {
+        _mouseWheenEvent.AddCallback(callback);
+    };
+
+    void RemoveMouseWheenEventHandler(const std::function<void(int)>& callback)
+    {
+        _mouseWheenEvent.RemoveCallback(callback);
     };
 
 
