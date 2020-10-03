@@ -58,7 +58,6 @@
     <ClInclude Include="Vertex.hpp">
       <Filter>Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="Vector2D.hpp" />
     <ClInclude Include="Mouse.hpp">
       <Filter>Input</Filter>
     </ClInclude>
@@ -95,11 +94,21 @@
     <ClInclude Include="FontSheet.hpp">
       <Filter>Bitmaps</Filter>
     </ClInclude>
-    <ClInclude Include="TestScene.hpp">
-      <Filter>Scenes</Filter>
-    </ClInclude>
     <ClInclude Include="Maths.hpp">
       <Filter>Maths</Filter>
+    </ClInclude>
+    <ClInclude Include="Button.hpp">
+      <Filter>Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="RayCasterScene.hpp">
+      <Filter>Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="Event.hpp" />
+    <ClInclude Include="Vector2D.hpp">
+      <Filter>Maths</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticFontSheet.hpp">
+      <Filter>Bitmaps</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

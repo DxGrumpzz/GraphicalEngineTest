@@ -175,6 +175,7 @@
     <ClInclude Include="BitmapScene.hpp" />
     <ClInclude Include="Button.hpp" />
     <ClInclude Include="Colour.hpp" />
+    <ClInclude Include="Event.hpp" />
     <ClInclude Include="FontSheet.hpp" />
     <ClInclude Include="Graphics\Graphics.hpp" />
     <ClInclude Include="GraphScene.hpp" />
@@ -189,6 +190,7 @@
     <ClInclude Include="SpriteChromaKeyEffect.hpp" />
     <ClInclude Include="SpriteTransparencyEffect.hpp" />
     <ClInclude Include="RayCasterScene.hpp" />
+    <ClInclude Include="StaticFontSheet.hpp" />
     <ClInclude Include="Vector2D.hpp" />
     <ClInclude Include="Vertex.hpp" />
     <ClInclude Include="Window.hpp" />
