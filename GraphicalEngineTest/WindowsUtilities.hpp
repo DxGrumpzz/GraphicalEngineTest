@@ -87,4 +87,55 @@ namespace WindowsUtilities
 
     };
 
+
+
+    #ifdef _DEBUG
+
+    #define WINCALL(result) WinCall(result, __LINE__, __FILEW__)
+
+
+
+    std::intmax_t WinCall(std::intmax_t result, std::intmax_t line, const wchar_t* file)
+    {
+        if (!result)
+        {
+            
+            ShowWinErrorW(GetLastErrorAsStringW(),L"WinError", line, file);
+
+            DebugBreak();
+        };
+
+        return result;
+    };
+
+    HANDLE WinCall(HANDLE handleResult, std::intmax_t line, const wchar_t* file)
+    {
+        if (handleResult == NULL)
+        {
+            ShowWinErrorW(GetLastErrorAsStringW(), L"WinError", line, file);
+
+            DebugBreak();
+        };
+
+        return handleResult;
+    };
+
+    HCURSOR WinCall(HCURSOR hCursorResult, std::intmax_t line, const wchar_t* file)
+    {
+        if (hCursorResult == NULL)
+        {
+            ShowWinErrorW(GetLastErrorAsStringW(), L"WinError", line, file);
+
+            DebugBreak();
+        };
+        
+        return hCursorResult;
+    };
+
+    #else
+    // This macro will not check if the call has failed because the environment is currently set to Release
+    #define WINCALL
+    #endif
+
+
 };
