@@ -185,6 +185,25 @@ public:
         pixel = pixelColour;
     };
 
+    /// <summary>
+    /// Draw a transparent-able pixel
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="pixelColour"></param>
+    void DrawPixelAlpha(int x, int y, const Colour& pixelColour)
+    {
+        // Get the current pixel on screen
+        Colour& screenPixel = GetPixel(x, y);
+
+        // Calculate normalized alpha
+        float alpha = Maths::Normalize(pixelColour.Alpha, 0, 255);
+
+        // Draw the pixel using pixel-transparecy formula (Thank you wikipedia)
+        screenPixel.Red = pixelColour.Red * alpha + (screenPixel.Red + alpha) * (1 - alpha);
+        screenPixel.Green = pixelColour.Green * alpha + (screenPixel.Green + alpha) * (1 - alpha);
+        screenPixel.Blue = pixelColour.Blue * alpha + (screenPixel.Blue + alpha) * (1 - alpha);
+    };
 
     /// <summary>
     /// Draw a line segment between 2 points
@@ -288,7 +307,7 @@ public:
     /// Get number of pixels 
     /// </summary>
     /// <returns></returns>
-    std::size_t GetPixelsCount()
+    std::size_t GetPixelsCount() const
     {
         return static_cast<std::size_t>(_windowHeight) * static_cast<std::size_t>(_windowWidth);
     };
@@ -493,7 +512,6 @@ private:
         swapChainDescriptor.BufferDesc.RefreshRate.Denominator = 60;
 
         swapChainDescriptor.BufferDesc.Format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM;
-
 
         swapChainDescriptor.SampleDesc.Count = 1;
         swapChainDescriptor.SampleDesc.Quality = 0;
