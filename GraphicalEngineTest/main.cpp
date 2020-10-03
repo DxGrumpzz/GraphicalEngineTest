@@ -78,9 +78,29 @@ void DrawFrame(float deltaTime)
 };
 
 
+void ShowFPS(float& elapsedFramesSeconds, int& elapsedFrames)
+{
+    // If enough time has elapsed...
+    if (elapsedFramesSeconds > 0.7f)
+    {
+        // Get FPS by dividing the number of elapsed frames and elapsed time
+        float fps = elapsedFrames / elapsedFramesSeconds;
+
+        // Format the FPS into a string
+        wchar_t str[127];
+        std::swprintf(str, 127, L"FPS: %.2f", fps);
+
+        // Show the fps
+        SetWindowTextW(window->GetHWND(), str);
+
+        elapsedFrames = 0;
+        elapsedFramesSeconds = 0;
+    };
+};
+
+
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nShowCmd)
 {
-
     // Registered name of this window
     const wchar_t* windowClassName = L"DirectXWindow";
 
@@ -101,13 +121,18 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     scenes.push_back(new GraphScene(*graphics, *window));
     scenes.push_back(new BitmapScene(*graphics, *window));
     scenes.push_back(new LightTestScene(*graphics, *window));
-    scenes.push_back(new TestScene(*graphics, *window));
-    
+    scenes.push_back(new RayCasterScene(*graphics, *window));
+
     currentScene = scenes.end() - 1;
 
     // Show the window
     window->ShowWindow();
 
+    using namespace WindowsUtilities;
+    
+    // Set default cursor, if we don't do this the default cursor will be IDC_APPSTARTING
+    WINCALL(SetCursor(WINCALL(LoadCursorW(NULL, IDC_ARROW))));
+    
     // Time points for start, and the end of the "game" loop
     std::chrono::system_clock::time_point beginning;
     std::chrono::system_clock::time_point end;
@@ -134,24 +159,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
         // Clear the frame before drawing again
         graphics->ClearFrame();
 
-
-        // If enough time has elapsed...
-        if (elapsedFramesSeconds > 0.7f)
-        {
-            // Get FPS by dividing the number of elapsed frames and elapsed time
-            float fps = elapsedFrames / elapsedFramesSeconds;
-
-            // Format the FPS into a string
-            wchar_t str[127];
-            std::swprintf(str, 127, L"FPS: %.2f", fps);
-
-            // Show the fps
-            SetWindowTextW(window->GetHWND(), str);
-
-            elapsedFrames = 0;
-            elapsedFramesSeconds = 0;
-        };
-
+        // Display frames per second
+        ShowFPS(elapsedFramesSeconds, elapsedFrames);
 
         // Draw frame function, should be only responsible for drawing, and simple branching logic
         DrawFrame(elapedTime.count());
