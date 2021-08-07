@@ -14,9 +14,10 @@
 #include "GraphScene.hpp"
 #include "RayCasterScene.hpp"
 #include "LightTestScene.hpp"
+#include "RasterScene.hpp"
 
 int windowWidth = 800;
-int windowHeight = 500;
+int windowHeight = 600;
 
 Window* window = nullptr;
 
@@ -122,8 +123,11 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     scenes.push_back(new BitmapScene(*graphics, *window));
     scenes.push_back(new LightTestScene(*graphics, *window));
     scenes.push_back(new RayCasterScene(*graphics, *window));
+    scenes.push_back(new RasterScene(*graphics, *window));
+
 
     currentScene = scenes.end() - 1;
+
 
     // Show the window
     window->ShowWindow();
