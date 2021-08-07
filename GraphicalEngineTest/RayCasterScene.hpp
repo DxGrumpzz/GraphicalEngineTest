@@ -1,4 +1,7 @@
-#pragma once
+﻿#pragma once
+
+#undef min;
+#undef max;
 
 #include <cmath>
 #include <random>
@@ -7,7 +10,8 @@
 #include "Vector2D.hpp"
 #include "VectorTransformer.hpp"
 #include "Maths.hpp"
-
+#include "Button.hpp"
+#include "StaticFontSheet.hpp"
 
 class RayCasterScene : public IScene
 {
@@ -34,16 +38,78 @@ private:
 
     std::function<void(int, int)> _rawMouseMovedHandler;
 
+    FontSheet _fontSheet;
+
+    Button _button;
+
+    StaticBitmap staticBitmap = { 0 };
+
+    // std::string s = "averylarg\nelongasfuckkstringasasdfasdashf\nha\nsash";
+    std::string s;
+
+
 public:
 
     RayCasterScene(Graphics& graphics, Window& window) :
         _graphics(graphics),
         _window(window),
         _rawMouseMovedHandler([this](int x, int y)
-                              {
-                                  MouseRawMoved(x, y);
-                              }),
     {
+        MouseRawMoved(x, y);
+    }),
+
+        _fontSheet(graphics, 13, 24),
+
+        _button(L"Text",
+                50, 25,
+                5, 105)
+    {
+        s.reserve(61 * 20);
+        /*
+        s.append("60                                                       ");
+        s.append("\n");
+        s.append("60                                                       ");
+        s.append("\n");
+        s.append("60                                                     ");
+        s.append("\n");
+        s.append("60                                                        ");
+        s.append("\n");
+        s.append("60                                                        ");
+        s.append("\n");
+        s.append("60                                                         ");
+        s.append("\n");
+        s.append("60                                                        ");
+        s.append("\n");
+        s.append("60                                                        ");
+        s.append("\n");
+        s.append("60                                                         ");
+        s.append("\n");
+        s.append("60                                                        ");
+        s.append("\n");
+        s.append("60                                                         ");
+        s.append("\n");
+        s.append("60                                                 ");
+        s.append("\n");
+        s.append("60                                          ");
+        s.append("\n");
+        s.append("60                                                        ");
+        s.append("\n");
+        s.append("60                                                       ");
+        s.append("\n");
+        s.append("60                                                       ");
+        s.append("\n");
+        s.append("60                                                       ");
+        s.append("\n");
+        s.append("60                                                    ");
+        s.append("\n");
+        s.append("60                                                        ");
+        s.append("\n");
+        s.append("60                                          ");
+        */
+        
+        s = "asdf";
+
+        _fontSheet.LoadFromFile(L"Resources\\Consolas13x24.bmp");
 
         _window.AddRawMouseMovedHandler(_rawMouseMovedHandler);
 
@@ -61,10 +127,32 @@ public:
             1,1,1,1,1,1,1,1,1,1,
         };
 
+        _button.BindClickEvent([this]()
+        {
+            static int s = 0;
+
+            SetWindowTextW(_window.GetHWND(), std::to_wstring(s++).c_str());
+        });
+
+        
+
+        StaticFontSheet f(L"Resources\\Consolas13x24.bmp",
+                          _graphics,
+                          13, 24);
+
+        SetWindowTextA(_window.GetHWND(), "Drawing using FontSheet");
+
+
+        //_aChar = f.GenerateChar('a');
+        //_aChar = f.GenerateString2(s);
+        //  staticBitmap = f.GenerateString(s);
     };
 
     ~RayCasterScene()
     {
+        delete[] staticBitmap.PixelBuffer;
+        staticBitmap.PixelBuffer = nullptr;
+
         delete[] _map;
         _map = nullptr;
     };
@@ -83,8 +171,15 @@ public:
     };
 
 
+
     virtual void UpdateScene(float deltaTime) override
     {
+
+
+
+        _button.Update(_window.GetMouse());
+
+
         _deltaTime = deltaTime;
         if ((_window.GetKeyboard().GetKeyState(VK_RETURN) == KeyState::Pressed) ||
             (_window.GetKeyboard().GetKeyState(VK_ESCAPE) == KeyState::Pressed))
@@ -92,6 +187,9 @@ public:
             cursorConfined = !cursorConfined;
             _window.ConfineMouse(cursorConfined);
             _window.HideMouse(cursorConfined);
+
+
+            _button.ButtonDisabled = cursorConfined;
         };
 
 
@@ -132,6 +230,7 @@ public:
 
     virtual void DrawScene() override
     {
+    
         for (int x = 0; x < _window.GetWindowWidth(); x++)
         {
             const float rayAngle = (_playerLookAtAngle - _playerFOV / 2.0f) + (static_cast<float>(x) / static_cast<float>(_window.GetWindowWidth())) * _playerFOV;
@@ -218,6 +317,11 @@ public:
 
         // Draw a little minimap showing where the player is located at
         DrawMiniMap();
+
+        _button.Draw(_graphics);
+
+        _fontSheet.DrawString(_button.GetX() + 5, _button.GetY() + 8, "Button", 0.5, 0.5);
+
     };
 
 
@@ -252,7 +356,7 @@ public:
                 int mapBlockX = a % _mapWidth;
                 int mapBlockY = a / _mapWidth;
 
-                
+
                 for (std::uint64_t y = 0; y < miniMapHeightScale; y++)
                 {
                     for (std::uint64_t x = 0; x < miniMapWidthScale; x++)

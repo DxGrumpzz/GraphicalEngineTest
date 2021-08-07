@@ -57,6 +57,16 @@ private:
     /// </summary>
     bool _mouseInsideButton = false;
 
+
+public:
+
+    /// <summary>
+    /// A boolean flag that indicates if this button is currently disabled
+    /// </summary>
+    bool ButtonDisabled = false;
+
+
+
 public:
 
     Button(std::wstring buttonText = L"",
@@ -76,10 +86,7 @@ public:
         _buttonPixels = new Colour[_buttonWidth * _buttonHeight] { 0 };
 
         // Draw a white background
-        for (int a = 0; a < _buttonWidth * _buttonHeight; a++)
-        {
-            _buttonPixels[a] = { 255, 255, 255 };
-        };
+        memset(_buttonPixels, 255, sizeof(Colour) * (_buttonWidth * _buttonHeight));
 
         // Draw the black borders around the button
         for (int x = 0; x < _buttonWidth; x++)
@@ -121,6 +128,10 @@ public:
     /// <param name="mouse"></param>
     void Update(const Mouse& mouse)
     {
+        // Don't update if button is disabled
+        if(ButtonDisabled == true)
+           return;
+
         // If onClick isn't bound don't bother with further execution
         if (_onClickHandler == nullptr)
             return;
@@ -131,21 +142,22 @@ public:
         {
             // If we're already inside the button...
             if (_mouseInsideButton == true)
+            {
+                // Check if the user pressed the button
+                if (mouse.LeftMouseButton == KeyState::Pressed)
+                {
+                    // Execute click handler
+                    _onClickHandler();
+                };
+
                 // Exit function so we don't overload on function calls
                 return;
+            };
 
             _mouseInsideButton = true;
 
             // Set cursor to hand 
             SetCursor(LoadCursorW(NULL, IDC_HAND));
-
-
-            // Check if the user pressed the button
-            if (mouse.LeftMouseButton == KeyState::Pressed)
-            {
-                // Execute click handler
-                _onClickHandler();
-            };
         }
         else
         {
@@ -161,6 +173,7 @@ public:
         };
 
     };
+
 
     /// <summary>
     /// Draw the button
@@ -179,6 +192,20 @@ public:
             };
         };
 
+    };
+
+
+
+public:
+
+    inline int GetX()
+    {
+        return _buttonX;
+    };
+
+    inline int GetY()
+    {
+        return _buttonY;
     };
 
 };

@@ -170,6 +170,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
+    <ClInclude Include="RasterScene.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BitmapScene.hpp" />
@@ -182,6 +183,7 @@
     <ClInclude Include="ISpriteEffect.hpp" />
     <ClInclude Include="Keyboard.hpp" />
     <ClInclude Include="KeyState.hpp" />
+    <ClInclude Include="LightTestScene.hpp" />
     <ClInclude Include="Maths.hpp" />
     <ClInclude Include="Maths\VectorTransformer.hpp" />
     <ClInclude Include="Mouse.hpp" />

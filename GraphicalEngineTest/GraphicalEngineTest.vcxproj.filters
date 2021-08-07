@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Shaders">
@@ -97,6 +97,9 @@
     <ClInclude Include="Maths.hpp">
       <Filter>Maths</Filter>
     </ClInclude>
+    <ClInclude Include="LightTestScene.hpp">
+      <Filter>Scenes</Filter>
+    </ClInclude>
     <ClInclude Include="Button.hpp">
       <Filter>Controls</Filter>
     </ClInclude>
@@ -109,6 +112,9 @@
     </ClInclude>
     <ClInclude Include="StaticFontSheet.hpp">
       <Filter>Bitmaps</Filter>
+    </ClInclude>
+    <ClInclude Include="RasterScene.hpp">
+      <Filter>Scenes</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

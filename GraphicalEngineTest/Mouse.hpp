@@ -112,7 +112,7 @@ public:
     };
 
 
-    void AddMouseWheenEventHandler(const std::function<void(int)>& callback)
+    void AddMouseWheelEventHandler(const std::function<void(int)>& callback)
     {
         _mouseWheenEvent.AddCallback(callback);
     };

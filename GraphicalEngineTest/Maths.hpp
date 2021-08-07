@@ -22,7 +22,7 @@ namespace Maths
 
     inline int Convert2DTo1D(int x, int y, int length)
     {
-        std::uint64_t index = static_cast<std::uint64_t>(x) + static_cast<std::uint64_t>(length) * static_cast<std::uint64_t>(y);
+        int index = x + length * y;
 
         return index;
     };
@@ -42,3 +42,23 @@ namespace Maths
         return normalized;
     };
 
+
+    /// <summary>
+    /// Takes a real number (of type TNormalzied), and converts it to an integer (of type TReturnNumber)
+    /// </summary>
+    /// <typeparam name="T"> The integer type to return </typeparam>
+    /// <typeparam name="TNormalized"> The real number type to convert from </typeparam>
+    /// <param name="normalizedNumber"></param>
+    /// <param name="min"></param>
+    /// <param name="max"></param>
+    /// <returns></returns>
+    template<class TReturn, class TNormalized>
+    inline TReturn DenormalizeNumber(TNormalized normalizedNumber, TReturn min, TReturn max)
+    {
+        TReturn denormalized = normalizedNumber * (max - min) + min;
+
+        return denormalized;
+    };
+
+
+};

@@ -89,7 +89,7 @@ public:
         {
             char currentChar = text[a];
 
-            // Check if current character is a newlin e
+            // Check if current character is a newline
             if (currentChar == '\n')
             {
                 // Reset X position

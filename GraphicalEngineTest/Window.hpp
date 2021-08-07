@@ -221,7 +221,7 @@ public:
     {
         return GetMouse();
     };
-    
+
     Mouse& GetMouse()
     {
         return _mouse;
@@ -302,22 +302,22 @@ private:
                 // No idea why, but this call 'GetRawInputData' must be called twice to work properly. Even accoring to Microsoft
                 std::uint32_t rawInputSize = 0;
                 GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, nullptr, &rawInputSize, sizeof(RAWINPUTHEADER));
-                
+
                 // Raw input struct, contains data about a registerd raw device(s)
                 RAWINPUT rawInput { 0 };
 
                 // Get raw input device data
-                if(GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, &rawInput, &rawInputSize, sizeof(RAWINPUTHEADER)) != rawInputSize)
+                if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, &rawInput, &rawInputSize, sizeof(RAWINPUTHEADER)) != rawInputSize)
                 {
                     std::wstring error = WindowsUtilities::GetLastErrorAsStringW();
                     DebugBreak();
                 };
-           
+
                 // Handle raw mouse input
                 if (rawInput.header.dwType == RIM_TYPEMOUSE)
                 {
                     RAWMOUSE rawMouse = rawInput.data.mouse;
-                    
+
                     // Invoke raw mouse moved event
                     _mouse.OnMouseRawMoved(rawMouse.lLastX, rawMouse.lLastY);
                 };
@@ -371,9 +371,38 @@ private:
                 return true;
             };
 
-            case WM_SETCURSOR:
+            case WM_SIZE:
             {
-                return true;
+                return 0;
+
+                _windowWidth = LOWORD(lParam); 
+                _windowHeight = HIWORD(lParam);
+
+                RECT windowRectTemp = { 0 };
+                GetWindowRect(_hwnd, &windowRectTemp);
+
+                long windowX = windowRectTemp.left;
+                long windowY = windowRectTemp.top;
+
+                RECT windowRect;
+                windowRect.top = windowX;
+                windowRect.left = windowY;
+
+                windowRect.bottom = _windowHeight + windowRect.top;
+                windowRect.right = _windowWidth + windowRect.left;
+
+                DWORD windowStyles = WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU | WS_SIZEBOX;
+
+                AdjustWindowRect(&windowRect, windowStyles, false);
+
+                SetWindowPos(_hwnd, 
+                             nullptr, 
+                             0, 0, 
+                             windowRect.right - windowRect.left, 
+                             windowRect.bottom - windowRect.top,
+                             SWP_NOMOVE);
+
+                return 0;
             };
 
             case WM_MOUSEWHEEL:
@@ -419,7 +448,7 @@ private:
         windowRect.right = _windowWidth + windowRect.left;
 
 
-        DWORD windowStyles = WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU;
+        DWORD windowStyles = WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU | WS_SIZEBOX;
 
         // Apparently this function is VERY important if you don't want your draw calls to skip pixel lines(???)
         AdjustWindowRect(&windowRect, windowStyles, false);

@@ -145,6 +145,89 @@ public:
     };
 
 
+    StaticBitmap GenerateString2(const std::string& string, float scale)
+    {
+        int rows = 1;
+        int width = 0;
+        int tempWidth = 0;
+
+        if (scale > 1.0)
+        {
+            for (const wchar_t& currentChar : string)
+            {
+                if (currentChar == L'\n')
+                {
+                    if (tempWidth > width)
+                        width = tempWidth;
+
+                    tempWidth = 0;
+                    rows++;
+                };
+                tempWidth++;
+            };
+
+
+            const int bufferWidth = width * _glyphWidth;
+            const int bufferHeight = rows * _glyphHeight;
+
+            Colour* pixelBuffer = new Colour[bufferWidth * bufferHeight] { 0 };
+
+            int aTemp = 0;
+            int line = 0;
+
+            for (int a = 0; a < string.size(); a++)
+            {
+                const char& character = string[a];
+                const std::pair<int, int>& characterPos = GetCharacterPos(character);
+
+                if (character == L'\n')
+                {
+                    aTemp = 0;
+                    line++;
+                    continue;
+                };
+
+
+                for (int x = 0; x < _glyphWidth; x++)
+                {
+                    for (int y = 0; y < _glyphHeight; y++)
+                    {
+                        for (float scaleX = 0.0; scaleX < scale; scaleX++)
+                        {
+                            for (float scaleY = 0; scaleY < scale; scaleY++)
+                            {
+                                const int pixelBufferIndex = Maths::Convert2DTo1D(x + (_glyphWidth * aTemp),
+                                                                                  y + (_glyphHeight * line), 
+                                                                                  bufferWidth);
+
+                                const int spriteIndex = Maths::Convert2DTo1D(x + (_glyphWidth * characterPos.first),
+                                                                             y + (_glyphHeight * characterPos.second),
+                                                                             _sprite.Width);
+
+                                pixelBuffer[pixelBufferIndex] = _sprite.GetPixel(spriteIndex);
+
+                            };
+                        };
+                    };
+                };
+
+                aTemp++;
+            };
+
+            StaticBitmap staticBitmap = { 0 };
+            staticBitmap.PixelBuffer = pixelBuffer;
+
+            staticBitmap.PixelBufferWidth = bufferWidth;
+            staticBitmap.PixelBufferHeight = bufferHeight;
+
+            staticBitmap.PixelBufferLength = staticBitmap.PixelBufferWidth * staticBitmap.PixelBufferHeight;
+
+            return  staticBitmap;
+        }
+
+        return { };
+    };
+
 
     Colour* GenerateChar(char character)
     {

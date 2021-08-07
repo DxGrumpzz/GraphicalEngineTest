@@ -144,14 +144,17 @@ public:
                            });
         */
 
+        static ISpriteEffect* spriteTransparencyEffect = new SpriteTransparencyEffect(_graphics, _alpha);
+        static ISpriteEffect* spriteChromaKeyEffect = new SpriteChromaKeyEffect({ 0, 0, 0 }, _sprite, _graphics);
+
         _sprite.DrawSprite(static_cast<int>(_p0.X), static_cast<int>(_p0.Y),
                            (_textureWidth * _textureX), (_textureHeight * _textureY),
                            (_textureWidth * _textureX) + _textureWidth, (_textureHeight * _textureY) + _textureHeight,
                            _horizontalScale,
                            _verticalScale,
                            {
-                               &SpriteTransparencyEffect(_graphics, _alpha),
-                               &SpriteChromaKeyEffect({ 0, 0, 0}, _sprite, _graphics),
+                               spriteTransparencyEffect,
+                               spriteChromaKeyEffect,
                            });
 
     };
