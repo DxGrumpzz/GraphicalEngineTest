@@ -14,7 +14,7 @@ private:
 
     Graphics& _graphics;
     Window& _window;
-    float _degrees = 0.0f;
+    float _degrees = 320.f;
 
 public:
 
@@ -25,9 +25,9 @@ public:
         _window.GetMouse().AddMouseWheelEventHandler([&](int delta)
         {
             if(delta > 0)
-                _degrees += 1;
+                _degrees += 1.0f;
             if (delta < 0)
-                _degrees -= 1;
+                _degrees -= 1.0f;
 
         });
 
@@ -71,32 +71,24 @@ public:
         VectorTransformer vectorTransformer = VectorTransformer(_window);
 
 
-        for (std::size_t index = 0; index < points.size() - 1; index++)
-        {
-            _graphics.DrawLine(vectorTransformer.NDCToScreenSpace(points[index]), vectorTransformer.NDCToScreenSpace(points[index + 1]), colour, false);
-        };
-
-        _graphics.DrawLine(vectorTransformer.NDCToScreenSpace(*(points.end() - 1)), vectorTransformer.NDCToScreenSpace(*points.begin()), colour, false);
-
 
 
         float slope1 = (points[0].Y - points[1].Y) / ((points[0].X - points[1].X));
         float b1 = points[0].Y - (slope1 * points[0].X);
 
 
-
         float slope2 = (points[1].Y - points[2].Y) / ((points[1].X - points[2].X));
-        float b2 = points[1].Y - (slope1 * points[1].X);
+        float b2 = points[1].Y - (slope2 * points[1].X);
+
+        float beginX = points[1].X;
+        float endX = points[2].X;
+        float delta = 0.001f;
 
 
-
-        for (float x2 = points[1].X; x2 < points[2].X; x2 += 0.001f)
+        // Fill
+        for (float x2 = beginX; x2 < endX; x2 += delta)
         {
             float y2 = (slope2 * x2) + b2;
-
-            auto screenCoords2 = vectorTransformer.NDCToScreenSpace({ x2, y2 });
-
-            _graphics.DrawPixel(screenCoords2.X, screenCoords2.Y, Colours::Yellow, false);
 
 
             float xBeing = points[0].X;
@@ -110,6 +102,14 @@ public:
         };
 
 
+
+        // Outline 
+        for (std::size_t index = 0; index < points.size() - 1; index++)
+        {
+            _graphics.DrawLine(vectorTransformer.NDCToScreenSpace(points[index]), vectorTransformer.NDCToScreenSpace(points[index + 1]), colour, false);
+        };
+
+        _graphics.DrawLine(vectorTransformer.NDCToScreenSpace(*(points.end() - 1)), vectorTransformer.NDCToScreenSpace(*points.begin()), colour, false);
 
     };
 };
