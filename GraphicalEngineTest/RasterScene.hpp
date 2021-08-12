@@ -14,7 +14,7 @@ private:
 
     Graphics& _graphics;
     Window& _window;
-    float _degrees = 320.f;
+    float _degrees = 0.f;
 
 public:
 
@@ -24,7 +24,7 @@ public:
     {
         _window.GetMouse().AddMouseWheelEventHandler([&](int delta)
         {
-            if(delta > 0)
+            if (delta > 0)
                 _degrees += 1.0f;
             if (delta < 0)
                 _degrees -= 1.0f;
@@ -40,76 +40,121 @@ public:
     {
         // _degrees += 100 * deltaTime;
 
-        if (_degrees >= 360.f)
-            _degrees = 0.0f;
-        if (_degrees < 0.f)
-            _degrees = 360.0f;
+        // if (_degrees >= 360.f)
+        //     _degrees = 0.0f;
+        // if (_degrees < 0.f)
+        //     _degrees = 360.0f;
+
+
 
     };
 
 
     virtual void DrawScene() override
     {
-
         Colour colour { 255, 0, 0 };
 
         std::array<Vector2D, 3> points =
         {
             // Left
-            Vector2D { -0.5f, 0.0f },
+            Vector2D { -100, 0 },
             // Top
-            Vector2D { 0.0f, 0.5f },
+            Vector2D { 0, -150 },
             // Right
-            Vector2D { 0.5f, 0.0f },
+            Vector2D { 200, 0 },
         };
 
         for (auto& point : points)
-        point.RotateDeg(_degrees);
-
-
+            point.RotateDeg(_degrees);
 
         VectorTransformer vectorTransformer = VectorTransformer(_window);
 
 
+        float height = points[1].Y - points[2].Y;
 
-
-        float slope1 = (points[0].Y - points[1].Y) / ((points[0].X - points[1].X));
-        float b1 = points[0].Y - (slope1 * points[0].X);
-
-
-        float slope2 = (points[1].Y - points[2].Y) / ((points[1].X - points[2].X));
-        float b2 = points[1].Y - (slope2 * points[1].X);
-
-        float beginX = points[1].X;
-        float endX = points[2].X;
-        float delta = 0.001f;
-
-
-        // Fill
-        for (float x2 = beginX; x2 < endX; x2 += delta)
+        if (points[0].Y == points[2].Y)
         {
-            float y2 = (slope2 * x2) + b2;
+            // Bottom facing triangle
+            if (points[1].Y > 0)
+            {
+                float slope1 = (points[1].Y - points[0].Y) / (points[1].X - points[0].X);
+
+                float b1 = points[1].Y - (slope1 * points[1].X);
 
 
-            float xBeing = points[0].X;
-            float yBegin = points[0].Y;
+                float slope2 = (points[1].Y - points[2].Y) / (points[1].X - points[2].X);
 
-            float xEnd = x2;
-            float yEnd = y2;
+                float b2 = points[1].Y - (slope2 * points[1].X);
 
-            _graphics.DrawLine(vectorTransformer.NDCToScreenSpace({ xBeing, yBegin }), vectorTransformer.NDCToScreenSpace({ xEnd, yEnd }), Colours::White, false);
 
-        };
+                auto f = [](float x, float slope, float b)
+                {
+                    return (slope * x) + b;
+                };
 
+                auto fInv = [](float y, float slope, float b)
+                {
+                    return (y - b) / slope;
+                };
+
+
+                for (int y = 0; y < height; y++)
+                {
+                    float beginX = fInv(y, slope1, b1);
+                    float beginY = y;
+
+                    float endX = fInv(y, slope2, b2);
+                    float endY = y;
+
+
+                    _graphics.DrawLine(vectorTransformer.CartesianVectorToScreenSpace({ beginX, beginY }), vectorTransformer.CartesianVectorToScreenSpace({ endX, endY }), Colours::White, false);
+                };
+            }
+            // Top facing triangle
+            else
+            {
+                float slope1 = (points[1].Y - points[0].Y) / (points[1].X - points[0].X);
+
+                float b1 = points[1].Y - (slope1 * points[1].X);
+
+
+                float slope2 = (points[1].Y - points[2].Y) / (points[1].X - points[2].X);
+
+                float b2 = points[1].Y - (slope2 * points[1].X);
+
+
+                auto f = [](float x, float slope, float b)
+                {
+                    return (slope * x) + b;
+                };
+
+                auto fInv = [](float y, float slope, float b)
+                {
+                    return (y - b) / slope;
+                };
+
+
+                for (int y = 0; y >= height; y--)
+                {
+                    float beginX = fInv(y, slope1, b1);
+                    float beginY = y;
+
+                    float endX = fInv(y, slope2, b2);
+                    float endY = y;
+
+                    _graphics.DrawLine(vectorTransformer.CartesianVectorToScreenSpace({ beginX, beginY }), vectorTransformer.CartesianVectorToScreenSpace({ endX, endY }), Colours::White, false);
+                };
+            }
+        }
 
 
         // Outline 
         for (std::size_t index = 0; index < points.size() - 1; index++)
         {
-            _graphics.DrawLine(vectorTransformer.NDCToScreenSpace(points[index]), vectorTransformer.NDCToScreenSpace(points[index + 1]), colour, false);
+            _graphics.DrawLine(vectorTransformer.CartesianVectorToScreenSpace(points[index]), vectorTransformer.CartesianVectorToScreenSpace(points[index + 1]), colour, false);
         };
 
-        _graphics.DrawLine(vectorTransformer.NDCToScreenSpace(*(points.end() - 1)), vectorTransformer.NDCToScreenSpace(*points.begin()), colour, false);
+        _graphics.DrawLine(vectorTransformer.CartesianVectorToScreenSpace(*(points.end() - 1)), vectorTransformer.CartesianVectorToScreenSpace(*points.begin()), colour, false);
 
     };
 };
