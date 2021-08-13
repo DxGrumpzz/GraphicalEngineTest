@@ -164,6 +164,11 @@ public:
     };
 
 
+    void DrawPixel(const Vector2D& position , const Colour& pixelColour = { 255, 255, 255, 1 }, bool checkBounds = true)
+    {
+        DrawPixel(position.X, position.Y, pixelColour, checkBounds);
+    };
+
     void DrawPixel(int x, int y, const Colour& pixelColour = { 255, 255, 255, 1 }, bool checkBounds = true)
     {
         if (x < 0 || x >= _windowWidth)

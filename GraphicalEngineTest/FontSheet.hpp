@@ -70,6 +70,11 @@ public:
     };
 
 
+    void DrawString(const Vector2D& position, const std::string& text, float scale = 1.0f)
+    {
+        DrawString(position.X, position.Y, text, scale, scale);
+    };
+
     /// <summary>
     /// Draw a string somewhere on screen
     /// </summary>

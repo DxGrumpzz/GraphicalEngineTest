@@ -21,6 +21,12 @@ public:
     {
     };
 
+    Vector2D(int x = 0, int y = 0) :
+        X(static_cast<float>(x)),
+        Y(static_cast<float>(y))
+    {
+    };
+
 public:
 
     float Length() const

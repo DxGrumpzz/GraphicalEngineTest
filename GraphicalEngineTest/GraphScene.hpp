@@ -48,7 +48,7 @@ private:
 
     FontSheet _font;
 
-    Vector2D _graphPosition = { 20, static_cast<float>(_window.GetWindowHeight() - 20) };
+    Vector2D _graphPosition = { 20, (_window.GetWindowHeight() - 20) };
 
     int _pointWidth = 4;
     int _pointHeight = 4;
