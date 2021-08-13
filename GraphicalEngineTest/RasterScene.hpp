@@ -15,7 +15,7 @@ private:
     Graphics& _graphics;
     Window& _window;
     float _degrees = 0.f;
-    float _degreesScalar = 50.f;
+    float _degreesScalar = 1.f;
     VectorTransformer _vectorTransformer;
 
     FontSheet _fontSheet;
@@ -23,12 +23,12 @@ private:
 
     std::array<Vector2D, 3> _points =
     {
-        // Top
-        Vector2D { -146.0f, 98.0f },
-        // Right
+        // Top   / bottom
+        Vector2D { -100.0f, -100.0f },
+        // Right / left 
         Vector2D { 100.0f, 0.0f },
-        // Left
-        Vector2D { -100.0f, 0.0f },
+        // Left  / right
+        Vector2D { 100.0f, -100.0f },
     };
 
 
@@ -48,9 +48,6 @@ public:
                 _degreesScalar += 1.0f;
             if (delta < 0)
                 _degreesScalar -= 1.0f;
-
-            if (_degreesScalar < 0.f)
-                _degreesScalar = 0.0f;
         });
     };
 
@@ -59,14 +56,7 @@ public:
 
     virtual void UpdateScene(float deltaTime) override
     {
-        if (_window.GetKeyboard().GetKeyState(VK_LEFT) == KeyState::Held)
-        {
-            _degrees += _degreesScalar * deltaTime;
-        }
-        else if (_window.GetKeyboard().GetKeyState(VK_RIGHT) == KeyState::Held)
-        {
-            _degrees -= _degreesScalar * deltaTime;
-        };
+        // _degrees = _degreesScalar * deltaTime;
     };
 
 
@@ -77,14 +67,13 @@ public:
         // Run / Rise
         if ((top.X == left.X) ||
             (top.X == right.X))
+
         {
             float slope1 = (top.X - left.X) / (top.Y - left.Y);
+            float b1 = left.X - (slope1 * left.Y);
 
-            float b1 = left.X - (slope1 * left.X);
 
-            
             float slope2 = (top.X - right.X) / (top.Y - right.Y);
-
             float b2 = top.X - (slope2 * top.Y);
 
 
@@ -121,6 +110,52 @@ public:
                 };
             };
         }
+        /*
+        else if (top.X == right.X)
+
+        {
+            float slope1 = (top.X - right.X) / (top.Y - right.Y);
+            float b1 = top.X - (slope1 * top.Y);
+
+            float slope2 = (top.X - left.X) / (top.Y - left.Y);
+            float b2 = top.X - (slope2 * top.Y);
+
+
+            auto f = [](float y, float slope, float b)
+            {
+                return (y * slope) + b;
+            };
+
+            auto fInv = [](float x, float slope, float b)
+            {
+                return (x - b) / slope;
+            };
+
+
+            int deltaY = -1;
+            int yBegin = top.Y;
+            int yEnd = left.Y;
+
+            int deltaX = 1;
+
+            for (int y = yBegin; y != yEnd; y += deltaY)
+            {
+                int xBegin = f(y, slope1, b1);
+                int xEnd = f(y, slope2, b2);
+
+                if (xBegin > xEnd)
+                    deltaX = -1;
+                else
+                    deltaX = 1;
+
+                for (int x = xBegin; x != xEnd; x += deltaX)
+                {
+                    _graphics.DrawPixel(_vectorTransformer.CartesianToScreenSpace(x, y), Colours::White, false);
+                };
+            };
+        }
+        */
+
         // Rise / Run
         else
         {
@@ -174,42 +209,103 @@ public:
     };
 
 
-    void DrawBottomFacingTriangle(const std::array<Vector2D, 3>& points)
+    void DrawBottomFacingTriangle(const Vector2D& bottom, const Vector2D& left, const Vector2D& right)
     {
-        float height = points[1].Y - points[2].Y;
+        float height = left.Y - bottom.Y;
 
-        float slope1 = (points[1].Y - points[0].Y) / (points[1].X - points[0].X);
-
-        float b1 = points[1].Y - (slope1 * points[1].X);
-
-
-        float slope2 = (points[1].Y - points[2].Y) / (points[1].X - points[2].X);
-
-        float b2 = points[1].Y - (slope2 * points[1].X);
-
-
-        auto f = [](float x, float slope, float b)
+        // Run / Rise
+        if ((bottom.X == left.X) ||
+            (bottom.X == right.X))
         {
-            return (slope * x) + b;
-        };
-
-        auto fInv = [](float y, float slope, float b)
-        {
-            return (y - b) / slope;
-        };
+            float slope1 = (bottom.X - left.X) / (bottom.Y - left.Y);
+            float b1 = bottom.X - (slope1 * bottom.Y);
 
 
-        for (int y = 0; y >= height; y--)
-        {
-            float beginX = fInv(y, slope1, b1);
-            float beginY = y;
+            float slope2 = (bottom.X - right.X) / (bottom.Y - right.Y);
+            float b2 = bottom.X - (slope2 * bottom.Y);
 
-            float endX = fInv(y, slope2, b2);
-            float endY = y;
 
-            for (int x = beginX; x > endX; x--)
+            auto f = [](float y, float slope, float b)
             {
-                _graphics.DrawPixel(_vectorTransformer.CartesianVectorToScreenSpace({ x, y }), Colours::White, false);
+                return (y * slope) + b;
+            };
+
+            auto fInv = [](float x, float slope, float b)
+            {
+                return (x - b) / slope;
+            };
+
+
+            int deltaY = -1;
+            int yBegin = left.Y;
+            int yEnd = bottom.Y;
+
+            int deltaX = 1;
+
+            for (int y = yBegin; y != yEnd; y += deltaY)
+            {
+                int xBegin = f(y, slope1, b1);
+                int xEnd = f(y, slope2, b2);
+
+                if (xBegin > xEnd)
+                    deltaX = -1;
+                else
+                    deltaX = 1;
+
+                for (int x = xBegin; x != xEnd; x += deltaX)
+                {
+                    _graphics.DrawPixel(_vectorTransformer.CartesianToScreenSpace(x, y), Colours::White, false);
+                };
+            };
+        }
+        // Rise / Run
+        else
+        {
+            float slope1 = (bottom.Y - left.Y) / (bottom.X - left.X);
+
+            float b1 = left.Y - (slope1 * left.X);
+
+
+            float slope2 = (bottom.Y - right.Y) / (bottom.X - right.X);
+
+            float b2 = bottom.Y - (slope2 * bottom.X);
+
+
+            auto f = [](float x, float slope, float b)
+            {
+                return (slope * x) + b;
+            };
+
+            auto fInv = [](float y, float slope, float b)
+            {
+                return (y - b) / slope;
+            };
+
+
+            int deltaY = -1;
+            int yBegin = left.Y;
+            int yEnd = bottom.Y;
+
+            int deltaX = 1;
+            // if (top.X < right.X)
+            //     deltaX = -1;
+            // else
+            //     deltaX = 1;
+
+            for (int y = yBegin; y != yEnd; y += deltaY)
+            {
+                int beginX = fInv(y, slope1, b1);
+                int endX = fInv(y, slope2, b2);
+
+                if (beginX > endX)
+                    deltaX = -1;
+                else
+                    deltaX = 1;
+
+                for (int x = beginX; x != endX; x += deltaX)
+                {
+                    _graphics.DrawPixel(_vectorTransformer.CartesianVectorToScreenSpace({ x, y }), Colours::White, false);
+                };
             };
         };
     };
@@ -225,47 +321,52 @@ public:
 
         if (std::roundf(_points[0].Y) == std::roundf(_points[1].Y))
         {
+            bool topFacing = _points[2].Y > _points[0].Y;
+
             // Top facing triangle
-            if (_points[2].Y > 0)
+            if (topFacing == true)
             {
-                DrawTopFacingTriangle(_points[0], _points[1], _points[2]);
+                DrawTopFacingTriangle(_points[2], _points[0], _points[1]);
             }
             // Bottom facing triangle
             else
             {
-                DrawBottomFacingTriangle({ _points[1], _points[2], _points[0] });
+                DrawBottomFacingTriangle(_points[2], _points[0], _points[1]);
             };
         };
 
         if (std::roundf(_points[0].Y) == std::roundf(_points[2].Y))
         {
+            bool topFacing = _points[1].Y > _points[0].Y;
+
             // Top facing triangle
-            if (_points[1].Y > 0)
+            if (topFacing == true)
             {
-                // DrawTopFacingTriangle(_points);
-                DrawTopFacingTriangle(_points[0], _points[1], _points[2]);
+                DrawTopFacingTriangle(_points[1], _points[0], _points[2]);
             }
             // Bottom facing triangle
             else
             {
-                DrawBottomFacingTriangle(_points);
+                DrawBottomFacingTriangle(_points[1], _points[0], _points[2]);
             };
         };
 
         if (std::roundf(_points[1].Y) == std::roundf(_points[2].Y))
         {
+            bool topFacing = _points[0].Y > _points[1].Y;
+
             // Top facing triangle
-            if (_points[0].Y > 0)
+            if (topFacing == true)
             {
-                // DrawTopFacingTriangle(_points);
                 DrawTopFacingTriangle(_points[0], _points[1], _points[2]);
             }
             // Bottom facing triangle
             else
             {
-                DrawBottomFacingTriangle(_points);
+                DrawBottomFacingTriangle(_points[0], _points[1], _points[2]);
             };
         };
+
 
 
 
@@ -295,7 +396,6 @@ public:
             {
                 for (int y = point.Y - margin; y < point.Y + margin; y++)
                 {
-
                     if ((mousePositionCartesian.X == x) &&
                         mousePositionCartesian.Y == y)
                     {
