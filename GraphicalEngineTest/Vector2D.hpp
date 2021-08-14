@@ -172,6 +172,16 @@ public:
     };
 
 
+    bool operator == (const Vector2D& leftVector) const 
+    {
+        return ((this->X == leftVector.X) && (this->Y == leftVector.Y));
+    };
+
+    bool operator != (const Vector2D& leftVector) const
+    {
+        return !((this->X != leftVector.X) || (this->Y != leftVector.Y));
+    };
+
     #pragma endregion
 
 };
