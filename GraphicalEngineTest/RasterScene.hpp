@@ -1,5 +1,6 @@
 #include <Array>
 #include <algorithm>
+#include <vector>
 
 #include "IScene.hpp"
 #include "Window.hpp"
@@ -13,6 +14,9 @@ class RasterScene : public IScene
 {
 private:
 
+
+private:
+
     Graphics& _graphics;
     Window& _window;
     float _degrees = 0.f;
@@ -22,16 +26,28 @@ private:
     FontSheet _fontSheet;
 
 
-    std::array<Vector2D, 3> _points =
+
+    std::vector<std::array<Vector2D, 3>> _triangles;
+
+    std::array<Vector2D, 3> _triangle1 =
     {
         // Top   / bottom
-        Vector2D { 0.0f, 300.0f },
+        Vector2D { 0.0f, 50.0f },
         // Right / left 
-        Vector2D { 400.0f, -300.0f },
+        Vector2D { 100.0f, -50.0f },
         // Left  / right
-        Vector2D { -400.0f, -300.0f },
+        Vector2D { -100.0f, -50.0f },
     };
 
+    std::array<Vector2D, 3> _triangle2 =
+    {
+        // Top   / bottom
+        Vector2D { 20.0f, 70.0f },
+        // Right / left 
+        Vector2D { -80.0f, -70.0f },
+        // Left  / right
+        Vector2D { 120.0f, -70.0f },
+    };
 
 public:
 
@@ -57,8 +73,27 @@ public:
 
     virtual void UpdateScene(float deltaTime) override
     {
+        if (_window.GetMouse().RightMouseButton == KeyState::Released)
+        {
+            const auto mousePosition = _vectorTransformer.MouseToCartesian(_window.GetMouse());
+
+            _triangles.push_back({ _triangle1[0] + mousePosition, _triangle1[1] + mousePosition, _triangle1[2] + mousePosition });
+        };
     };
 
+
+
+    virtual void DrawScene() override
+    {
+        for (const auto& triangle : _triangles)
+        {
+            DrawTriangle(triangle);
+        };
+
+    };
+
+
+private:
 
     void DrawTopFacingTriangle(const Vector2D& top, const Vector2D& right, const Vector2D& left, const Colour& colour = Colours::White)
     {
@@ -144,6 +179,7 @@ public:
             {
                 int beginX = fInv(y, slope1, b1);
                 int endX = fInv(y, slope2, b2);
+
 
                 if (beginX > endX)
                     deltaX = -1;
@@ -261,69 +297,66 @@ public:
     };
 
 
-    virtual void DrawScene() override
+    void DrawTriangle(const std::array<Vector2D, 3>& triangle,
+                      const Colour& fillColour = Colours::White,
+                      const Colour& strokeColour = Colours::Red)
     {
-        Colour colour { 255, 0, 0 };
 
-        for (auto& point : _points)
-            point.RotateDeg(_degrees);
-
-
-        if (std::roundf(_points[0].Y) == std::roundf(_points[1].Y))
+        if (std::roundf(triangle[0].Y) == std::roundf(triangle[1].Y))
         {
-            bool topFacing = _points[2].Y > _points[0].Y;
+            bool topFacing = triangle[2].Y > triangle[0].Y;
 
             // Top facing triangle
             if (topFacing == true)
             {
-                DrawTopFacingTriangle(_points[2], _points[0], _points[1]);
+                DrawTopFacingTriangle(triangle[2], triangle[0], triangle[1]);
             }
-             // Bottom facing triangle
+            // Bottom facing triangle
             else
             {
-                DrawBottomFacingTriangle(_points[2], _points[0], _points[1]);
+                DrawBottomFacingTriangle(triangle[2], triangle[0], triangle[1]);
             };
         }
-        else if (std::roundf(_points[0].Y) == std::roundf(_points[2].Y))
+        else if (std::roundf(triangle[0].Y) == std::roundf(triangle[2].Y))
         {
-            bool topFacing = _points[1].Y > _points[0].Y;
+            bool topFacing = triangle[1].Y > triangle[0].Y;
 
             //  Top facing triangle
             if (topFacing == true)
             {
-                DrawTopFacingTriangle(_points[1], _points[0], _points[2]);
+                DrawTopFacingTriangle(triangle[1], triangle[0], triangle[2]);
             }
             //  Bottom facing triangle
             else
             {
-                DrawBottomFacingTriangle(_points[1], _points[0], _points[2]);
+                DrawBottomFacingTriangle(triangle[1], triangle[0], triangle[2]);
             };
 
         }
-        else if (std::roundf(_points[1].Y) == std::roundf(_points[2].Y))
+        else if (std::roundf(triangle[1].Y) == std::roundf(triangle[2].Y))
         {
-            bool topFacing = _points[0].Y > _points[1].Y;
+            bool topFacing = triangle[0].Y > triangle[1].Y;
 
-             // Top facing triangle
+            // Top facing triangle
             if (topFacing == true)
             {
-                DrawTopFacingTriangle(_points[0], _points[1], _points[2]);
+                DrawTopFacingTriangle(triangle[0], triangle[1], triangle[2]);
             }
-             // Bottom facing triangle
+            // Bottom facing triangle
             else
             {
-                DrawBottomFacingTriangle(_points[0], _points[1], _points[2]);
+                DrawBottomFacingTriangle(triangle[0], triangle[1], triangle[2]);
             };
         }
         else
         {
-            const Vector2D& topPoint = *std::max_element(_points.begin(), _points.end(),
+            const Vector2D& topPoint = *std::max_element(triangle.begin(), triangle.end(),
                                                          [](const Vector2D& point1, const Vector2D& point2)
             {
                 return point2.Y > point1.Y;
             });
 
-            const Vector2D& bottomPoint = *std::max_element(_points.begin(), _points.end(),
+            const Vector2D& bottomPoint = *std::max_element(triangle.begin(), triangle.end(),
                                                             [](const Vector2D& point1, const Vector2D& point2)
             {
                 return point1.Y > point2.Y;
@@ -332,44 +365,44 @@ public:
             Vector2D const* midPoint = nullptr;
 
 
-            if ((topPoint == _points[0]) &&
-                (bottomPoint == _points[1]))
+            if ((topPoint == triangle[0]) &&
+                (bottomPoint == triangle[1]))
             {
-                midPoint = &_points[2];
+                midPoint = &triangle[2];
             };
 
-            if ((topPoint == _points[0]) &&
-                (bottomPoint == _points[2]))
+            if ((topPoint == triangle[0]) &&
+                (bottomPoint == triangle[2]))
             {
-                midPoint = &_points[1];
-            };
-
-
-
-            if ((topPoint == _points[1]) &&
-                (bottomPoint == _points[0]))
-            {
-                midPoint = &_points[2];
-            };
-
-            if ((topPoint == _points[1]) &&
-                (bottomPoint == _points[2]))
-            {
-                midPoint = &_points[0];
+                midPoint = &triangle[1];
             };
 
 
 
-            if ((topPoint == _points[2]) &&
-                (bottomPoint == _points[0]))
+            if ((topPoint == triangle[1]) &&
+                (bottomPoint == triangle[0]))
             {
-                midPoint = &_points[1];
+                midPoint = &triangle[2];
             };
 
-            if ((topPoint == _points[2]) &&
-                (bottomPoint == _points[1]))
+            if ((topPoint == triangle[1]) &&
+                (bottomPoint == triangle[2]))
             {
-                midPoint = &_points[0];
+                midPoint = &triangle[0];
+            };
+
+
+
+            if ((topPoint == triangle[2]) &&
+                (bottomPoint == triangle[0]))
+            {
+                midPoint = &triangle[1];
+            };
+
+            if ((topPoint == triangle[2]) &&
+                (bottomPoint == triangle[1]))
+            {
+                midPoint = &triangle[0];
             };
 
 
@@ -391,9 +424,9 @@ public:
                 DrawBottomFacingTriangle(bottomPoint, { static_cast<float>(beginX), midPoint->Y }, *midPoint);
 
 
-                _graphics.DrawLine(_vectorTransformer.CartesianVectorToScreenSpace({ static_cast<float>(beginX), midPoint->Y }), 
-                                   _vectorTransformer.CartesianVectorToScreenSpace(*midPoint), 
-                                   Colours::Red, false);
+                _graphics.DrawLine(_vectorTransformer.CartesianVectorToScreenSpace({ static_cast<float>(beginX), midPoint->Y }),
+                                   _vectorTransformer.CartesianVectorToScreenSpace(*midPoint),
+                                   strokeColour, false);
             }
             // Rise / Run
             else
@@ -412,32 +445,30 @@ public:
 
                 _graphics.DrawLine(_vectorTransformer.CartesianVectorToScreenSpace({ static_cast<float>(endX), midPoint->Y }),
                                    _vectorTransformer.CartesianVectorToScreenSpace(*midPoint),
-                                   Colours::Red, false);
+                                   strokeColour, false);
             };
         };
 
 
         // Outline 
-        for (std::size_t index = 0; index < _points.size() - 1; index++)
+        for (std::size_t index = 0; index < triangle.size() - 1; index++)
         {
-            _graphics.DrawLine(_vectorTransformer.CartesianVectorToScreenSpace(_points[index]), _vectorTransformer.CartesianVectorToScreenSpace(_points[index + 1]), colour, false);
+            _graphics.DrawLine(_vectorTransformer.CartesianVectorToScreenSpace(triangle[index]), _vectorTransformer.CartesianVectorToScreenSpace(triangle[index + 1]), strokeColour, false);
         };
 
-        _graphics.DrawLine(_vectorTransformer.CartesianVectorToScreenSpace(*(_points.end() - 1)), _vectorTransformer.CartesianVectorToScreenSpace(*_points.begin()), colour, false);
+        _graphics.DrawLine(_vectorTransformer.CartesianVectorToScreenSpace(*(triangle.end() - 1)), _vectorTransformer.CartesianVectorToScreenSpace(*triangle.begin()), strokeColour, false);
 
 
-        _fontSheet.DrawString(_vectorTransformer.CartesianVectorToScreenSpace(_points[0]), "p0", 0.7f);
-        _fontSheet.DrawString(_vectorTransformer.CartesianVectorToScreenSpace(_points[1]), "p1", 0.7f);
-        _fontSheet.DrawString(_vectorTransformer.CartesianVectorToScreenSpace(_points[2]), "p2", 0.7f);
-
+        // s_fontSheet.DrawString(_vectorTransformer.CartesianVectorToScreenSpace(triangle[0]), "p0", 0.7f);
+        // s_fontSheet.DrawString(_vectorTransformer.CartesianVectorToScreenSpace(triangle[1]), "p1", 0.7f);
+        // s_fontSheet.DrawString(_vectorTransformer.CartesianVectorToScreenSpace(triangle[2]), "p2", 0.7f);
 
 
         int margin = 5;
 
-        for (Vector2D& point : _points)
+        for (const Vector2D& point : triangle)
         {
             auto mousePositionCartesian = _vectorTransformer.MouseToCartesian(_window.GetMouse());
-
 
             for (int x = point.X - margin; x < point.X + margin; x++)
             {
@@ -452,22 +483,25 @@ public:
 
 
                         if (_window.GetMouse().LeftMouseButton == KeyState::Held)
-                            point = mousePositionCartesian;
+                            // ** Very, very, very bad practice **
+                            const_cast<Vector2D&>(point) = mousePositionCartesian;
 
 
-                        _fontSheet.DrawString(_vectorTransformer.CartesianToScreenSpace(mousePositionCartesian.X, mousePositionCartesian.Y + margin),
-                                              std::string("(")
-                                              .append(std::to_string(static_cast<int>(point.X)))
-                                              .append(",")
-                                              .append(std::to_string(static_cast<int>(point.Y)))
-                                              .append(")"),
-                                              0.7f);
+                        // _fontSheet.DrawString(_vectorTransformer.CartesianToScreenSpace(mousePositionCartesian.X, mousePositionCartesian.Y + margin),
+                        //                       std::string("(")
+                        //                       .append(std::to_string(static_cast<int>(point.X)))
+                        //                       .append(",")
+                        //                       .append(std::to_string(static_cast<int>(point.Y)))
+                        //                       .append(")"),
+                        //                       0.7f);
                     };
                 };
             };
 
-
         };
 
+
+
     };
+
 };
