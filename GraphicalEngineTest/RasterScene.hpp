@@ -26,8 +26,17 @@ private:
     FontSheet _fontSheet;
 
 
+    std::vector<std::array<Vector2D, 3>> _triangles =
+    {
+        std::array<Vector2D, 3>
+        {
+            Vector2D { -100.0f, 0.0f },
+            Vector2D {  100.0f, 200.0f },
+            Vector2D {  150.0f, 50.0f },
+        },
 
-    std::vector<std::array<Vector2D, 3>> _triangles;
+
+    };
 
     std::array<Vector2D, 3> _triangle1 =
     {
@@ -501,7 +510,111 @@ private:
         };
 
 
+        // Mid-point
 
+        const Vector2D midPoint1 = LineMidPoint(triangle[1], triangle[0]);
+        const Vector2D midPoint2 = LineMidPoint(triangle[1], triangle[2]);
+
+
+        const Vector2D intesect = LineIntersect(triangle[0], midPoint2,
+                                                triangle[0], midPoint1);
+
+        auto mousePositionCartesian = _vectorTransformer.MouseToCartesian(_window.GetMouse());
+
+
+        for (int x = intesect.X - margin; x < intesect.X + margin; x++)
+        {
+            for (int y = intesect.Y - margin; y < intesect.Y + margin; y++)
+            {
+                // if ((mousePositionCartesian.X == x) &&
+                //     mousePositionCartesian.Y == y)
+                {
+                    for (int _x = intesect.X - margin; _x < intesect.X + margin; _x++)
+                        for (int _y = intesect.Y - margin; _y < intesect.Y + margin; _y++)
+                            _graphics.DrawPixel(_vectorTransformer.CartesianToScreenSpace(_x, _y), Colours::Magenta, false);
+
+
+                };
+            };
+        };
+
+    };
+
+
+
+
+    constexpr float Slope(const Vector2D& point1, const Vector2D& point2) const
+    {
+        // Rise / Run
+        if (point1.X == point2.X)
+        {
+            const float slope = (point1.X - point2.X) / (point1.Y - point2.Y);
+
+            return slope;
+        }
+        // Run / Rise
+        else
+        {
+            const float slope = (point1.Y - point2.Y) / (point1.X - point2.X);
+
+            return slope;
+        };
+    };
+
+    Vector2D LineMidPoint(const Vector2D& point1, const Vector2D& point2) const
+    {
+        const float height = point1.Y - point2.Y;
+
+        if (point1.X == point2.X)
+            return (height / 2) - point1.Y;
+
+
+        const float slope = Slope(point1, point2);
+
+        float yIntercept = point1.Y - slope * point1.X;
+
+
+        const float yMid = point1.Y - (height / 2);
+
+        const float xMid = (yMid - slope) / slope;
+
+        return Vector2D { xMid, yMid };
+    };
+
+
+    constexpr float LineAxisIntercept(const Vector2D& point1, const Vector2D& point2) const
+    {
+        const float slope = Slope(point1, point2);
+
+        if (point1.X == point2.X)
+        {
+            const float d = point1.X - (slope * point1.Y);
+
+            return d;
+        }
+        else
+        {
+            const float b = point1.Y - (slope * point1.X);
+
+            return b;
+        };
+
+    };
+
+    Vector2D LineIntersect(const Vector2D& point1, const Vector2D& point2,
+                           const Vector2D& point3, const Vector2D& point4) const
+    {
+        const float line1Slope = Slope(point1, point2);
+        const float line2Slope = Slope(point3, point4);
+
+        const float intercept1 = LineAxisIntercept(point1, point2);
+        const float intercept2 = LineAxisIntercept(point3, point4);
+
+        const float xIntersect = (intercept2 - intercept1) - (line1Slope - line2Slope);
+
+        const float yIntersect = ((line1Slope * intercept2) - (line2Slope * intercept1)) / (line1Slope - line2Slope);
+
+        return Vector2D { xIntersect, yIntersect };
     };
 
 };
